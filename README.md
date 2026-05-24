@@ -23,7 +23,7 @@ To get the project running locally on your machine, follow these steps:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/Hariom1729/LearnHub
+git clone https://github.com/Hariom1729/LearnHub.git
 cd LearnHub
 ```
 
