@@ -31,6 +31,8 @@ const allowedOrigins = [
 	process.env.CLIENT_URL,
 	'http://localhost:5173',
 	'http://127.0.0.1:5173',
+    'https://axiora-app-two.vercel.app',
+    'https://axiora-bccwudws4-hariom1729s-projects.vercel.app'
 ].filter(Boolean);
 
 app.use(
