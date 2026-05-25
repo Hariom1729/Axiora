@@ -67,7 +67,7 @@ exports.courseEnrollmentEmail = (courseName, name) => {
     
     <body>
         <div class="container">
-            <a href=""><img class="logo" src="https://i.ibb.co/68Z4p3h/axiora-logo-light.png"
+            <a href="https://axiora-app-two.vercel.app"><img class="logo" src="https://axiora-app-two.vercel.app/axiora-logo-light.png"
                     alt="Axiora Logo"></a>
             <div class="message">Course Registration Confirmation</div>
             <div class="body">
@@ -79,7 +79,7 @@ exports.courseEnrollmentEmail = (courseName, name) => {
                 <a class="cta" href="https://study-notion-mern-stack.netlify.app/dashboard/enrolled-courses">Go to Dashboard</a>
             </div>
             <div class="support">If you have any questions or need assistance, please feel free to reach out to us at 
-            <a href="mailto:gadeaniruddha2@gmail.com">gadeaniruddha2@gmail.com</a>. We are here to help!</div>
+            <a href="mailto:onlywebsite2592@gmail.com">onlywebsite2592@gmail.com</a>. We are here to help!</div>
         </div>
     </body>
     

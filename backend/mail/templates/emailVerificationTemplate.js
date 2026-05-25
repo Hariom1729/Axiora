@@ -68,8 +68,8 @@ const otpTemplate = (otp, name) => {
 	
 	<body>
 		<div class="container">
-			<a href=""><img class="logo"
-					src="https://i.ibb.co/68Z4p3h/axiora-logo-light.png" alt="Axiora Logo"></a>
+			<a href="https://axiora-app-two.vercel.app"><img class="logo"
+					src="https://axiora-app-two.vercel.app/axiora-logo-light.png" alt="Axiora Logo"></a>
 			<div class="message">OTP Verification Email</div>
 			<div class="body">
 				<p>Dear ${name}</p>
@@ -80,7 +80,7 @@ const otpTemplate = (otp, name) => {
 				Once your account is verified, you will have access to our platform and its features.</p>
 			</div>
 			<div class="support">If you have any questions or need assistance, please feel free to reach out to us at <a
-					href="mailto:gadeaniruddha2@gmail.com">gadeaniruddha2@gmail.com</a>. We are here to help!</div>
+					href="mailto:onlywebsite2592@gmail.com">onlywebsite2592@gmail.com</a>. We are here to help!</div>
 		</div>
 	</body>
 	
