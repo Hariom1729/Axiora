@@ -120,7 +120,7 @@ exports.signup = async (req, res) => {
                 success: false,
                 message: 'Otp not found in DB, please try again'
             });
-        } else if (otp !== recentOtp.otp) {
+        } else if (String(otp).trim() !== String(recentOtp.otp).trim()) {
             // otp invalid
             return res.status(400).json({
                 success: false,
