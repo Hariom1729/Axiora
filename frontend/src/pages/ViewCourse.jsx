@@ -64,11 +64,19 @@ export default function ViewCourse() {
 
   return (
     <>
-      <div className="relative flex min-h-[calc(100vh-3.5rem)] ">
-        {/* view course side bar */}
-        {courseViewSidebar && <VideoDetailsSidebar setReviewModal={setReviewModal} />}
+      <div className="relative flex min-h-[calc(100vh-3.5rem)] bg-richblack-900">
+        {/* Background Blob Effects */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+            <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[100px] mix-blend-screen"></div>
+            <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-pink-600/10 rounded-full blur-[100px] mix-blend-screen"></div>
+        </div>
 
-        <div className="h-[calc(100vh-3.5rem)] flex-1 overflow-auto mt-14">
+        {/* view course side bar */}
+        <div className="relative z-10">
+          {courseViewSidebar && <VideoDetailsSidebar setReviewModal={setReviewModal} />}
+        </div>
+
+        <div className="h-[calc(100vh-3.5rem)] flex-1 overflow-auto mt-14 relative z-10">
           <div className="mx-6">
             <Outlet />
           </div>

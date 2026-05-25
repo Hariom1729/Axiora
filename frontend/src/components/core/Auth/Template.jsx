@@ -2,39 +2,52 @@
 import LoginForm from "./LoginForm"
 import SignupForm from "./SignupForm"
 import Img from './../../common/Img';
-
+import FadeIn from './../../common/animations/FadeIn';
+import GlassCard from './../../common/animations/GlassCard';
+import SlideUp from './../../common/animations/SlideUp';
 
 function Template({ title, description1, description2, image, formType }) {
-  // const { loading } = useSelector((state) => state.auth);
-
   return (
-    <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
-      <div className="mx-auto flex w-11/12 max-w-maxContent flex-col-reverse justify-between gap-y-12 py-12 md:flex-row md:gap-y-0 md:gap-x-12">
-        <div className="mx-auto w-11/12 max-w-[450px] md:mx-0">
-          <h1 className="text-[1.875rem] font-semibold leading-[2.375rem] text-richblack-5">
-            {title}
-          </h1>
-          <p className="mt-4 text-[1.125rem] leading-[1.625rem]">
-            <span className="text-richblack-100">{description1}</span>{" "}
-            <span className="font-edu-sa font-bold italic text-blue-100">
-              {description2}
-            </span>
-          </p>
+    <div className="min-h-screen w-full flex bg-richblack-900 relative overflow-hidden">
+      {/* Background blobs for SaaS feel */}
+      <div className="absolute top-0 left-[-10%] w-[40%] h-[40%] bg-blue-500/20 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow"></div>
+      <div className="absolute bottom-0 right-[-10%] w-[40%] h-[40%] bg-pink-500/20 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
 
-          {formType === "signup" ? <SignupForm /> : <LoginForm />}
-        </div>
+      {/* Left Form Section */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 z-10">
+        <SlideUp className="w-full max-w-[480px]">
+          <GlassCard className="p-8 sm:p-10 !bg-richblack-800/40">
+            <h1 className="text-3xl sm:text-4xl font-bold font-outfit text-white mb-3">
+              {title}
+            </h1>
+            <p className="text-base text-richblack-200 mb-8 leading-relaxed">
+              <span>{description1}</span>{" "}
+              <span className="font-edu-sa font-bold italic text-blue-300">
+                {description2}
+              </span>
+            </p>
 
+            {formType === "signup" ? <SignupForm /> : <LoginForm />}
+          </GlassCard>
+        </SlideUp>
+      </div>
 
-        <div className="relative max-w-[550px] md:mx-0 my-0">
-          <Img
-            src={image}
-            alt={formType}
-            className={' min-w-[105%] h-full text-white'}
-          />
-        </div>
+      {/* Right Image/Illustration Section */}
+      <div className="hidden lg:flex w-1/2 items-center justify-center p-12 z-10 relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 to-richblack-900/80 backdrop-blur-sm z-0"></div>
+        <FadeIn className="relative z-10 w-full max-w-[600px] h-full max-h-[800px] flex items-center justify-center">
+          <div className="relative w-full aspect-square rounded-3xl overflow-hidden shadow-2xl shadow-blue-500/20 group">
+            <div className="absolute inset-0 bg-gradient-to-t from-richblack-900/80 via-transparent to-transparent z-10"></div>
+            <Img
+              src={image}
+              alt={formType}
+              className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-105"
+            />
+          </div>
+        </FadeIn>
       </div>
     </div>
   )
 }
 
-export default Template
+export default Template;

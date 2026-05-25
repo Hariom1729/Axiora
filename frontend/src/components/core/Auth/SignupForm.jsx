@@ -95,7 +95,7 @@ function SignupForm() {
         <div className="flex gap-x-4">
           {/* First Name */}
           <label>
-            <p className="mb-1 text-[0.875rem] leading-[1.375rem] text-richblack-5">
+            <p className="mb-1 text-[0.875rem] leading-[1.375rem] text-richblack-5 font-medium">
               First Name <sup className="text-pink-200">*</sup>
             </p>
             <input
@@ -105,16 +105,13 @@ function SignupForm() {
               value={firstName}
               onChange={handleOnChange}
               placeholder="Enter first name"
-              style={{
-                boxShadow: "inset 0px -1px 0px rgba(255, 255, 255, 0.18)",
-              }}
-              className="w-full rounded-[0.5rem] bg-richblack-800 p-[12px] text-richblack-5 outline-none"
+              className="w-full rounded-xl bg-richblack-800/50 p-[12px] text-richblack-5 outline-none border border-richblack-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-300"
             />
           </label>
 
           {/* Last Name */}
           <label>
-            <p className="mb-1 text-[0.875rem] leading-[1.375rem] text-richblack-5">
+            <p className="mb-1 text-[0.875rem] leading-[1.375rem] text-richblack-5 font-medium">
               Last Name <sup className="text-pink-200">*</sup>
             </p>
             <input
@@ -124,17 +121,14 @@ function SignupForm() {
               value={lastName}
               onChange={handleOnChange}
               placeholder="Enter last name"
-              style={{
-                boxShadow: "inset 0px -1px 0px rgba(255, 255, 255, 0.18)",
-              }}
-              className="w-full rounded-[0.5rem] bg-richblack-800 p-[12px] text-richblack-5 outline-none"
+              className="w-full rounded-xl bg-richblack-800/50 p-[12px] text-richblack-5 outline-none border border-richblack-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-300"
             />
           </label>
         </div>
 
         {/* Email Address */}
         <label className="w-full">
-          <p className="mb-1 text-[0.875rem] leading-[1.375rem] text-richblack-5">
+          <p className="mb-1 text-[0.875rem] leading-[1.375rem] text-richblack-5 font-medium">
             Email Address <sup className="text-pink-200">*</sup>
           </p>
           <input
@@ -144,10 +138,7 @@ function SignupForm() {
             value={email}
             onChange={handleOnChange}
             placeholder="Enter email address"
-            style={{
-              boxShadow: "inset 0px -1px 0px rgba(255, 255, 255, 0.18)",
-            }}
-            className="w-full rounded-[0.5rem] bg-richblack-800 p-[12px] text-richblack-5 outline-none"
+            className="w-full rounded-xl bg-richblack-800/50 p-[12px] text-richblack-5 outline-none border border-richblack-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-300"
           />
         </label>
 
@@ -155,7 +146,7 @@ function SignupForm() {
         <div className="flex gap-x-4">
           {/* Create Password */}
           <label className="relative">
-            <p className="mb-1 text-[0.875rem] leading-[1.375rem] text-richblack-5">
+            <p className="mb-1 text-[0.875rem] leading-[1.375rem] text-richblack-5 font-medium">
               Create Password <sup className="text-pink-200">*</sup>
             </p>
             <input
@@ -165,14 +156,11 @@ function SignupForm() {
               value={password}
               onChange={handleOnChange}
               placeholder="Enter Password"
-              style={{
-                boxShadow: "inset 0px -1px 0px rgba(255, 255, 255, 0.18)",
-              }}
-              className="w-full rounded-[0.5rem] bg-richblack-800 p-[12px] pr-10 text-richblack-5 outline-none"
+              className="w-full rounded-xl bg-richblack-800/50 p-[12px] pr-10 text-richblack-5 outline-none border border-richblack-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-300"
             />
             <span
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-[38px] z-[10] cursor-pointer"
+              className="absolute right-3 top-[38px] z-[10] cursor-pointer hover:scale-110 transition-transform"
             >
               {showPassword ? (
                 <AiOutlineEyeInvisible fontSize={24} fill="#AFB2BF" />
@@ -184,7 +172,7 @@ function SignupForm() {
 
           {/* Confirm Password  */}
           <label className="relative">
-            <p className="mb-1 text-[0.875rem] leading-[1.375rem] text-richblack-5">
+            <p className="mb-1 text-[0.875rem] leading-[1.375rem] text-richblack-5 font-medium">
               Confirm Password <sup className="text-pink-200">*</sup>
             </p>
             <input
@@ -194,14 +182,11 @@ function SignupForm() {
               value={confirmPassword}
               onChange={handleOnChange}
               placeholder="Confirm Password"
-              style={{
-                boxShadow: "inset 0px -1px 0px rgba(255, 255, 255, 0.18)",
-              }}
-              className="w-full rounded-[0.5rem] bg-richblack-800 p-[12px] pr-10 text-richblack-5 outline-none"
+              className="w-full rounded-xl bg-richblack-800/50 p-[12px] pr-10 text-richblack-5 outline-none border border-richblack-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-300"
             />
             <span
               onClick={() => setShowConfirmPassword((prev) => !prev)}
-              className="absolute right-3 top-[38px] z-[10] cursor-pointer"
+              className="absolute right-3 top-[38px] z-[10] cursor-pointer hover:scale-110 transition-transform"
             >
               {showConfirmPassword ? (
                 <AiOutlineEyeInvisible fontSize={24} fill="#AFB2BF" />
@@ -215,7 +200,7 @@ function SignupForm() {
 
         <button
           type="submit"
-          className="mt-6 rounded-[8px] bg-yellow-50 py-[8px] px-[12px] font-medium text-richblack-900"
+          className="mt-6 rounded-xl bg-yellow-50 hover:bg-yellow-100 py-3 px-[12px] font-semibold text-richblack-900 shadow-[0_0_20px_rgba(255,214,10,0.3)] hover:shadow-[0_0_30px_rgba(255,214,10,0.5)] transition-all duration-300 transform hover:-translate-y-1"
         >
           Create Account
         </button>

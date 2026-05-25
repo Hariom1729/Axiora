@@ -6,6 +6,8 @@ import { useSelector } from "react-redux";
 import Home from "./pages/Home"
 import Login from "./pages/Login"
 import Signup from "./pages/Signup"
+import { AnimatePresence } from "framer-motion";
+import PageTransition from "./components/common/animations/PageTransition";
 import ForgotPassword from "./pages/ForgotPassword";
 import UpdatePassword from "./pages/UpdatePassword";
 import VerifyEmail from "./pages/VerifyEmail";
@@ -86,113 +88,115 @@ function App() {
         <HiArrowNarrowUp />
       </button>
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/about" element={<About />} />
-        <Route path="catalog/:catalogName" element={<Catalog />} />
-        <Route path="courses/:courseId" element={<CourseDetails />} />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+          <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+          <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+          <Route path="catalog/:catalogName" element={<PageTransition><Catalog /></PageTransition>} />
+          <Route path="courses/:courseId" element={<PageTransition><CourseDetails /></PageTransition>} />
 
-        {/* Open Route - for Only Non Logged in User */}
-        <Route
-          path="signup" element={
-            <OpenRoute>
-              <Signup />
-            </OpenRoute>
-          }
-        />
+          {/* Open Route - for Only Non Logged in User */}
+          <Route
+            path="signup" element={
+              <OpenRoute>
+                <PageTransition><Signup /></PageTransition>
+              </OpenRoute>
+            }
+          />
 
-        <Route
-          path="login" element={
-            <OpenRoute>
-              <Login />
-            </OpenRoute>
-          }
-        />
+          <Route
+            path="login" element={
+              <OpenRoute>
+                <PageTransition><Login /></PageTransition>
+              </OpenRoute>
+            }
+          />
 
-        <Route
-          path="forgot-password" element={
-            <OpenRoute>
-              <ForgotPassword />
-            </OpenRoute>
-          }
-        />
+          <Route
+            path="forgot-password" element={
+              <OpenRoute>
+                <PageTransition><ForgotPassword /></PageTransition>
+              </OpenRoute>
+            }
+          />
 
-        <Route
-          path="verify-email" element={
-            <OpenRoute>
-              <VerifyEmail />
-            </OpenRoute>
-          }
-        />
+          <Route
+            path="verify-email" element={
+              <OpenRoute>
+                <PageTransition><VerifyEmail /></PageTransition>
+              </OpenRoute>
+            }
+          />
 
-        <Route
-          path="update-password/:id" element={
-            <OpenRoute>
-              <UpdatePassword />
-            </OpenRoute>
-          }
-        />
-
-
-
-
-        {/* Protected Route - for Only Logged in User */}
-        {/* Dashboard */}
-        <Route element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-        >
-          <Route path="dashboard/my-profile" element={<MyProfile />} />
-          <Route path="dashboard/Settings" element={<Settings />} />
-
-          {/* Route only for Students */}
-          {/* cart , EnrolledCourses */}
-          {user?.accountType === ACCOUNT_TYPE.STUDENT && (
-            <>
-              <Route path="dashboard/cart" element={<Cart />} />
-              <Route path="dashboard/enrolled-courses" element={<EnrolledCourses />} />
-            </>
-          )}
-
-          {/* Route only for Instructors */}
-          {/* add course , MyCourses, EditCourse*/}
-          {user?.accountType === ACCOUNT_TYPE.INSTRUCTOR && (
-            <>
-              <Route path="dashboard/instructor" element={<Instructor />} />
-              <Route path="dashboard/add-course" element={<AddCourse />} />
-              <Route path="dashboard/my-courses" element={<MyCourses />} />
-              <Route path="dashboard/edit-course/:courseId" element={<EditCourse />} />
-            </>
-          )}
-        </Route>
+          <Route
+            path="update-password/:id" element={
+              <OpenRoute>
+                <PageTransition><UpdatePassword /></PageTransition>
+              </OpenRoute>
+            }
+          />
 
 
-        {/* For the watching course lectures */}
-        <Route
-          element={
+
+
+          {/* Protected Route - for Only Logged in User */}
+          {/* Dashboard */}
+          <Route element={
             <ProtectedRoute>
-              <ViewCourse />
+              <PageTransition><Dashboard /></PageTransition>
             </ProtectedRoute>
           }
-        >
-          {user?.accountType === ACCOUNT_TYPE.STUDENT && (
-            <Route
-              path="view-course/:courseId/section/:sectionId/sub-section/:subSectionId"
-              element={<VideoDetails />}
-            />
-          )}
-        </Route>
+          >
+            <Route path="dashboard/my-profile" element={<MyProfile />} />
+            <Route path="dashboard/Settings" element={<Settings />} />
+
+            {/* Route only for Students */}
+            {/* cart , EnrolledCourses */}
+            {user?.accountType === ACCOUNT_TYPE.STUDENT && (
+              <>
+                <Route path="dashboard/cart" element={<Cart />} />
+                <Route path="dashboard/enrolled-courses" element={<EnrolledCourses />} />
+              </>
+            )}
+
+            {/* Route only for Instructors */}
+            {/* add course , MyCourses, EditCourse*/}
+            {user?.accountType === ACCOUNT_TYPE.INSTRUCTOR && (
+              <>
+                <Route path="dashboard/instructor" element={<Instructor />} />
+                <Route path="dashboard/add-course" element={<AddCourse />} />
+                <Route path="dashboard/my-courses" element={<MyCourses />} />
+                <Route path="dashboard/edit-course/:courseId" element={<EditCourse />} />
+              </>
+            )}
+          </Route>
+
+
+          {/* For the watching course lectures */}
+          <Route
+            element={
+              <ProtectedRoute>
+                <PageTransition><ViewCourse /></PageTransition>
+              </ProtectedRoute>
+            }
+          >
+            {user?.accountType === ACCOUNT_TYPE.STUDENT && (
+              <Route
+                path="view-course/:courseId/section/:sectionId/sub-section/:subSectionId"
+                element={<VideoDetails />}
+              />
+            )}
+          </Route>
 
 
 
 
-        {/* Page Not Found (404 Page ) */}
-        <Route path="*" element={<PageNotFound />} />
+          {/* Page Not Found (404 Page ) */}
+          <Route path="*" element={<PageTransition><PageNotFound /></PageTransition>} />
 
-      </Routes>
+        </Routes>
+      </AnimatePresence>
 
     </div>
   );

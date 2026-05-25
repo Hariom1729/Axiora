@@ -73,49 +73,55 @@ function Catalog() {
 
 
     return (
-        <>
+        <div className="bg-richblack-900 min-h-screen">
             {/* Hero Section */}
-            <div className=" box-content bg-richblack-800 px-4">
-                <div className="mx-auto flex min-h-[260px] max-w-maxContentTab flex-col justify-center gap-4 lg:max-w-maxContent ">
-                    <p className="text-sm text-richblack-300">
+            <div className="relative box-content bg-richblack-800 px-4 py-16 overflow-hidden">
+                {/* Background blobls */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-0 pointer-events-none">
+                    <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-500/20 rounded-full blur-[120px] mix-blend-screen animate-blob"></div>
+                    <div className="absolute top-[30%] right-[-10%] w-[40%] h-[40%] bg-pink-500/20 rounded-full blur-[120px] mix-blend-screen animate-blob" style={{ animationDelay: '2s' }}></div>
+                </div>
+
+                <div className="relative z-10 mx-auto flex min-h-[260px] max-w-maxContentTab flex-col justify-center gap-4 lg:max-w-maxContent ">
+                    <p className="text-sm text-richblack-300 font-medium tracking-wide">
                         {`Home / Catalog / `}
-                        <span className="text-yellow-25">
+                        <span className="text-yellow-50">
                             {catalogPageData?.selectedCategory?.name}
                         </span>
                     </p>
-                    <p className="text-3xl text-richblack-5">
+                    <p className="text-4xl md:text-5xl font-outfit font-bold text-richblack-5">
                         {catalogPageData?.selectedCategory?.name}
                     </p>
-                    <p className="max-w-[870px] text-richblack-200">
+                    <p className="max-w-[870px] text-lg text-richblack-200 leading-relaxed">
                         {catalogPageData?.selectedCategory?.description}
                     </p>
                 </div>
             </div>
 
             {/* Section 1 */}
-            <div className=" mx-auto box-content w-full max-w-maxContentTab px-4 py-12 lg:max-w-maxContent">
-                <div className="section_heading">Courses to get you started</div>
-                <div className="my-4 flex border-b border-b-richblack-600 text-sm">
+            <div className="mx-auto box-content w-full max-w-maxContentTab px-4 py-16 lg:max-w-maxContent">
+                <div className="text-3xl font-bold font-outfit text-richblack-5 mb-8">Courses to get you started</div>
+                <div className="my-4 flex border-b border-b-richblack-700/50 text-sm font-medium">
                     <p
-                        className={`px-4 py-2 ${active === 1
-                            ? "border-b border-b-yellow-25 text-yellow-25"
-                            : "text-richblack-50"
-                            } cursor-pointer`}
+                        className={`px-4 py-3 transition-all duration-300 ${active === 1
+                            ? "border-b-2 border-b-yellow-50 text-yellow-50 bg-richblack-800/40"
+                            : "text-richblack-200 hover:text-richblack-50 hover:bg-richblack-800/20"
+                            } cursor-pointer rounded-t-lg`}
                         onClick={() => setActive(1)}
                     >
-                        Most Populer
+                        Most Popular
                     </p>
                     <p
-                        className={`px-4 py-2 ${active === 2
-                            ? "border-b border-b-yellow-25 text-yellow-25"
-                            : "text-richblack-50"
-                            } cursor-pointer`}
+                        className={`px-4 py-3 transition-all duration-300 ${active === 2
+                            ? "border-b-2 border-b-yellow-50 text-yellow-50 bg-richblack-800/40"
+                            : "text-richblack-200 hover:text-richblack-50 hover:bg-richblack-800/20"
+                            } cursor-pointer rounded-t-lg`}
                         onClick={() => setActive(2)}
                     >
                         New
                     </p>
                 </div>
-                <div>
+                <div className="mt-8">
                     <Course_Slider
                         Courses={catalogPageData?.selectedCategory?.courses}
                     />
@@ -123,8 +129,8 @@ function Catalog() {
             </div>
 
             {/* Section 2 */}
-            <div className=" mx-auto box-content w-full max-w-maxContentTab px-4 py-12 lg:max-w-maxContent">
-                <div className="section_heading">
+            <div className="mx-auto box-content w-full max-w-maxContentTab px-4 py-16 lg:max-w-maxContent">
+                <div className="text-3xl font-bold font-outfit text-richblack-5 mb-8">
                     Top courses in {catalogPageData?.differentCategory?.name}
                 </div>
                 <div>
@@ -135,10 +141,10 @@ function Catalog() {
             </div>
 
             {/* Section 3 */}
-            <div className=" mx-auto box-content w-full max-w-maxContentTab px-4 py-12 lg:max-w-maxContent">
-                <div className="section_heading">Frequently Bought</div>
+            <div className="mx-auto box-content w-full max-w-maxContentTab px-4 py-16 lg:max-w-maxContent">
+                <div className="text-3xl font-bold font-outfit text-richblack-5 mb-8">Frequently Bought</div>
                 <div className="py-8">
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                         {catalogPageData?.mostSellingCourses
                             ?.slice(0, 4)
                             .map((course, i) => (
@@ -149,7 +155,7 @@ function Catalog() {
             </div>
 
             <Footer />
-        </>
+        </div>
     )
 }
 

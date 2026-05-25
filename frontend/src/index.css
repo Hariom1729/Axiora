@@ -34,26 +34,32 @@ body {
 /* ===== Scrollbar CSS ===== */
 /* Firefox */
 * {
-  scrollbar-width: auto;
-  scrollbar-color: #afb2bf;
+  scrollbar-width: thin;
+  scrollbar-color: #6E727F #000814;
 }
 
 /* Chrome, Edge, and Safari */
 *::-webkit-scrollbar {
-  width: 7px;
+  width: 6px;
+  height: 6px;
 }
 
 *::-webkit-scrollbar-track {
-  background: #000814;
+  background: rgba(0, 8, 20, 0.8);
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: #afb2bf;
+  background-color: #424854;
   border-radius: 10px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background-color: #767986f5;
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #838894;
+}
+
+::selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: #fff;
 }
 
 

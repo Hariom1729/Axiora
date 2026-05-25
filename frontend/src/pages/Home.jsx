@@ -97,64 +97,74 @@ const Home = () => {
 
     return (
         <React.Fragment>
-            {/* background random image */}
-            <div>
-                <div className="w-full h-[450px] md:h-[650px] absolute top-0 left-0 opacity-[0.3] overflow-hidden object-cover ">
-                    <img src={backgroundImg} alt="Background"
-                        className="w-full h-full object-cover "
-                    />
+            {/* Background Blob Effects */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-500/20 rounded-full blur-[120px] mix-blend-screen animate-blob"></div>
+                <div className="absolute top-[20%] right-[-10%] w-[40%] h-[40%] bg-pink-500/20 rounded-full blur-[120px] mix-blend-screen animate-blob" style={{ animationDelay: '2s' }}></div>
+            </div>
 
-                    <div className="absolute left-0 bottom-0 w-full h-[250px] opacity_layer_bg "></div>
+            {/* background random image */}
+            <div className="absolute top-0 w-full h-[650px] -z-20">
+                <div className="w-full h-full absolute top-0 left-0 opacity-[0.15] overflow-hidden mix-blend-overlay">
+                    <img src={backgroundImg} alt="Background"
+                        className="w-full h-full object-cover"
+                    />
+                    <div className="absolute left-0 bottom-0 w-full h-full bg-gradient-to-t from-richblack-900 via-richblack-900/80 to-transparent"></div>
                 </div>
             </div>
 
-            <div className=' '>
-                {/*Section1  */}
-                <div className='relative h-[450px] md:h-[550px] justify-center mx-auto flex flex-col w-11/12 max-w-maxContent items-center text-white '>
+            <div className='relative z-10'>
+                {/*Section1 Hero */}
+                <div className='relative min-h-[650px] justify-center mx-auto flex flex-col w-11/12 max-w-maxContent items-center text-white pt-20 pb-10'>
 
                     <Link to={"/signup"}>
-                        <div className='z-0 group p-1 mx-auto rounded-full bg-richblack-800 font-bold text-richblack-200
-                                        transition-all duration-200 hover:scale-95 w-fit'>
-                            <div className='flex flex-row items-center gap-2 rounded-full px-10 py-[5px]
-                              transition-all duration-200 group-hover:bg-richblack-900'>
-                                <p>Become an Instructor</p>
-                                <FaArrowRight />
+                        <motion.div 
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className='z-0 group p-[1px] mx-auto rounded-full bg-gradient-to-r from-blue-500 to-pink-500 font-bold text-richblack-200 hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(236,72,153,0.5)]'>
+                            <div className='flex flex-row items-center gap-2 rounded-full px-8 py-2 bg-richblack-900/90 backdrop-blur-sm transition-all duration-300 group-hover:bg-richblack-900/70 text-sm'>
+                                <p className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-400">Become an Instructor</p>
+                                <FaArrowRight className="text-pink-400" />
                             </div>
-                        </div>
-
+                        </motion.div>
                     </Link>
 
                     <motion.div
-                        variants={fadeIn('left', 0.1)}
+                        variants={fadeIn('up', 0.2)}
                         initial='hidden'
                         whileInView={'show'}
-                        viewport={{ once: false, amount: 0.1 }}
-                        className='text-center text-3xl lg:text-4xl font-semibold mt-7  '
+                        viewport={{ once: true }}
+                        className='text-center text-4xl lg:text-6xl font-bold font-outfit mt-10 tracking-tight'
                     >
-                        Empower Your Future with
-                        <HighlightText text={"Coding Skills"} />
+                        Empower Your Future with <br className="hidden md:block" />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1FA2FF] via-[#12D8FA] to-[#A6FFCB]">Coding Skills</span>
                     </motion.div>
 
                     <motion.div
-                        variants={fadeIn('right', 0.1)}
+                        variants={fadeIn('up', 0.4)}
                         initial='hidden'
                         whileInView={'show'}
-                        viewport={{ once: false, amount: 0.1 }}
-                        className=' mt-4 w-[90%] text-center text-base lg:text-lg font-bold text-richblack-300'
+                        viewport={{ once: true }}
+                        className='mt-6 w-[90%] md:w-[70%] text-center text-base lg:text-xl text-richblack-300 leading-relaxed'
                     >
-                        With our online coding courses, you can learn at your own pace, from anywhere in the world, and get access to a wealth of resources, including hands-on projects, quizzes, and personalized feedback from instructors.
+                        With our online courses, learn at your own pace from anywhere. Get access to a wealth of resources, hands-on projects, and personalized feedback from industry experts.
                     </motion.div>
 
 
-                    <div className='flex flex-row gap-7 mt-8'>
-                        <CTAButton active={true} linkto={"/signup"}>
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6, duration: 0.5 }}
+                        className='flex flex-row gap-6 mt-12'>
+                        <Link to="/signup" className="rounded-xl bg-yellow-50 hover:bg-yellow-100 py-3 px-8 font-semibold text-richblack-900 shadow-[0_0_20px_rgba(255,214,10,0.3)] hover:shadow-[0_0_30px_rgba(255,214,10,0.5)] transition-all duration-300 transform hover:-translate-y-1">
                             Learn More
-                        </CTAButton>
+                        </Link>
 
-                        <CTAButton active={false} linkto={"/login"}>
+                        <Link to="/login" className="rounded-xl bg-richblack-800/80 backdrop-blur-md border border-richblack-700 hover:bg-richblack-800 py-3 px-8 font-semibold text-white transition-all duration-300 transform hover:-translate-y-1 hover:border-richblack-500">
                             Book a Demo
-                        </CTAButton>
-                    </div>
+                        </Link>
+                    </motion.div>
                 </div>
 
                 {/* animated code */}

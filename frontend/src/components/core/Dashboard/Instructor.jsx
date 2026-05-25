@@ -100,12 +100,14 @@ export default function Instructor() {
         :
         courses.length > 0 ? (
           <div>
-            <div className="my-4 flex h-[450px] space-x-4">
+            <div className="my-4 flex flex-col md:flex-row h-auto md:h-[450px] gap-6">
               {/* Render chart / graph */}
               {totalAmount > 0 || totalStudents > 0 ? (
-                <InstructorChart courses={instructorData} />
+                <div className="w-full md:w-2/3 h-full rounded-2xl bg-richblack-800/40 border border-richblack-700/50 backdrop-blur-md p-6 shadow-xl">
+                    <InstructorChart courses={instructorData} />
+                </div>
               ) : (
-                <div className="flex-1 rounded-md bg-richblack-800 p-6">
+                <div className="flex-1 rounded-2xl bg-richblack-800/40 border border-richblack-700/50 backdrop-blur-md p-6 shadow-xl flex flex-col justify-center items-center">
                   <p className="text-lg font-bold text-richblack-5">Visualize</p>
                   <p className="mt-4 text-xl font-medium text-richblack-50">
                     Not Enough Data To Visualize
@@ -115,24 +117,24 @@ export default function Instructor() {
 
               {/* left column */}
               {/* Total Statistics */}
-              <div className="flex min-w-[250px] flex-col rounded-md bg-richblack-800 p-6">
-                <p className="text-lg font-bold text-richblack-5">Statistics</p>
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <p className="text-lg text-richblack-200">Total Courses</p>
-                    <p className="text-3xl font-semibold text-richblack-50">
+              <div className="flex min-w-[250px] flex-col rounded-2xl bg-richblack-800/40 border border-richblack-700/50 backdrop-blur-md p-6 shadow-xl w-full md:w-1/3">
+                <p className="text-xl font-bold text-richblack-5 mb-6 border-b border-richblack-700 pb-2">Statistics</p>
+                <div className="space-y-6 flex-1 flex flex-col justify-around">
+                  <div className="group">
+                    <p className="text-sm font-medium text-richblack-200 uppercase tracking-wider mb-1">Total Courses</p>
+                    <p className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-400 transition-transform group-hover:scale-105 origin-left">
                       {courses.length}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-lg text-richblack-200">Total Students</p>
-                    <p className="text-3xl font-semibold text-richblack-50">
+                  <div className="group">
+                    <p className="text-sm font-medium text-richblack-200 uppercase tracking-wider mb-1">Total Students</p>
+                    <p className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-pink-400 transition-transform group-hover:scale-105 origin-left">
                       {totalStudents}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-lg text-richblack-200">Total Income</p>
-                    <p className="text-3xl font-semibold text-richblack-50">
+                  <div className="group">
+                    <p className="text-sm font-medium text-richblack-200 uppercase tracking-wider mb-1">Total Income</p>
+                    <p className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-500 transition-transform group-hover:scale-105 origin-left">
                       Rs. {totalAmount}
                     </p>
                   </div>
