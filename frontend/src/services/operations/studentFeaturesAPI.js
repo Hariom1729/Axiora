@@ -82,7 +82,7 @@ export async function buyCourse(token, coursesId, userDetails, navigate, dispatc
             currency: order.currency,
             amount: order.amount,
             order_id: order.id,
-            name: "LearnHub",
+            name: "Axiora",
             description: "Thank you for purchasing the course",
             image: rzpLogo,
             prefill: {

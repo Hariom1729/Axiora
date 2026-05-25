@@ -4,7 +4,7 @@ import Img from './Img';
 
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react"
-// import SwiperCore, { Autoplay, FreeMode, Pagination } from 'swiper/core';
+import { Autoplay, FreeMode, Pagination } from 'swiper/modules';
 // Import Swiper styles
 import "swiper/css"
 import "swiper/css/free-mode"
@@ -38,11 +38,34 @@ function ReviewSlider() {
     })()
   }, [])
 
-  
-  // console.log('reviews= ', reviews)
-  if(!reviews) return;
+  const dummyReviews = [
+    {
+      user: { firstName: "Alex", lastName: "Chen", image: "" },
+      course: { courseName: "Full Stack Web Development" },
+      review: "Axiora has completely transformed how I learn. The UI is gorgeous and the courses are top tier!",
+      rating: 5
+    },
+    {
+      user: { firstName: "Sarah", lastName: "Jenkins", image: "" },
+      course: { courseName: "Advanced Machine Learning" },
+      review: "The neon cyberpunk aesthetic makes studying feel like I'm hacking into the mainframe. Highly recommend!",
+      rating: 5
+    },
+    {
+      user: { firstName: "Michael", lastName: "Ross", image: "" },
+      course: { courseName: "UI/UX Design Principles" },
+      review: "As a designer, I appreciate the glassmorphism and smooth transitions. The content is just as good as the design.",
+      rating: 4.5
+    },
+    {
+      user: { firstName: "Elena", lastName: "Rodriguez", image: "" },
+      course: { courseName: "Data Structures & Algorithms" },
+      review: "The best ed-tech platform out there. Everything is snappy and responsive. Loving the dark mode!",
+      rating: 5
+    }
+  ];
 
-
+  const displayReviews = reviews && reviews.length > 0 ? reviews : dummyReviews;
   return (
     <div className="text-white">
       <div className="my-[50px] h-[184px] max-w-maxContentTab lg:max-w-maxContent">
@@ -68,13 +91,14 @@ function ReviewSlider() {
             delay: 2500,
             disableOnInteraction: false,
           }}
-          // modules={[FreeMode, Pagination, Autoplay]}
-          className="w-full "
+          speed={1500}
+          modules={[FreeMode, Pagination, Autoplay]}
+          className="w-full py-4"
         >
-          {reviews.map((review, i) => {
+          {displayReviews.map((review, i) => {
             return (
               <SwiperSlide key={i}>
-                <div className="flex flex-col gap-3 bg-richblack-800 p-3 text-[14px] text-richblack-25 min-h-[180px] max-h-[180px] glass-bg">
+                <div className="flex flex-col gap-3 bg-richblack-800 p-3 text-[14px] text-richblack-25 min-h-[180px] max-h-[180px] glass-bg rounded-xl border border-richblack-700 hover:border-blue-400 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 cursor-pointer">
                   <div className="flex items-center gap-4">
                     <Img
                       src={

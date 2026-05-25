@@ -23,18 +23,18 @@ const Dashboard = () => {
     }, [])
 
     return (
-        <div className='relative flex min-h-[calc(100vh-3.5rem)] bg-richblack-900'>
+        <div className='relative flex min-h-[calc(100vh-4rem)] bg-richblack-900 mt-16'>
             {/* Background Blob Effects for Dashboard */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[100px] mix-blend-screen"></div>
                 <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-pink-600/10 rounded-full blur-[100px] mix-blend-screen"></div>
             </div>
 
-            <div className="z-10 h-full fixed top-14 left-0">
+            <div className="z-10 h-[calc(100vh-4rem)] fixed top-16 left-0">
                 <Sidebar />
             </div>
 
-            <div className='h-[calc(100vh-3.5rem)] overflow-auto w-full sm:ml-[220px] relative z-10'>
+            <div className='h-[calc(100vh-4rem)] overflow-auto w-full sm:ml-[220px] relative z-10'>
                 <div className='mx-auto w-11/12 max-w-[1000px] py-10 px-2 sm:px-6'>
                     <Outlet />
                 </div>

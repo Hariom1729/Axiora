@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { ImGithub, ImLinkedin2 } from "react-icons/im";
 
 // Images
-import StudyNotionLogo from "../../assets/Logo/Logo-Full-Light.png";
+import AxioraLogoLight from "../../assets/Logo/axiora-logo-light.png";
 
 // footer data
 const BottomFooter = ["Privacy Policy", "Cookie Policy", "Terms"];
@@ -29,7 +29,10 @@ const Footer = () => {
           {/* Section 1 */}
           <div className="lg:w-[50%] flex flex-wrap flex-row justify-between lg:border-r lg:border-richblack-700 pl-3 lg:pr-5 gap-3">
             <div className="w-[30%] flex flex-col gap-3 lg:w-[30%] mb-7 lg:pl-0">
-              <img src={StudyNotionLogo} alt="" className="object-contain" />
+              <div className="flex items-center gap-3">
+                <img src={AxioraLogoLight} alt="Axiora Logo" className="h-12 w-auto object-contain" />
+                <span className="text-2xl font-bold text-richblack-5 tracking-wide">Axiora</span>
+              </div>
               <h1 className="text-richblack-50 font-semibold text-[16px]">
                 Company
               </h1>
@@ -243,7 +246,7 @@ const Footer = () => {
                 Hariom Yadav
               </Link>
             </div>
-            <span> © 2026 Studynotion</span>
+            <span> © 2026 Axiora</span>
           </div>
 
           <div className="flex items-center">

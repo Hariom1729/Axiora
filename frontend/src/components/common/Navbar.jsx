@@ -3,7 +3,7 @@ import { Link, matchPath, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 import { NavbarLinks } from "../../../data/navbar-links"
-import studyNotionLogo from '../../assets/Logo/Logo-Full-Light.png'
+import axioraLogoLight from '../../assets/Logo/axiora-logo-light.png'
 import { fetchCourseCategories } from './../../services/operations/courseDetailsAPI';
 
 import ProfileDropDown from '../core/Auth/ProfileDropDown'
@@ -84,12 +84,13 @@ const Navbar = () => {
 
 
     return (
-        <nav className={`z-[10] flex h-16 w-full items-center justify-center border-b-[1px] border-b-richblack-700/50 text-white transition-all duration-300 ${showNavbar === 'hide' ? '-translate-y-full' : 'translate-y-0'} ${showNavbar !== 'top' ? 'bg-richblack-900/70 backdrop-blur-md shadow-glass' : 'bg-transparent'} fixed top-0 left-0 right-0`}>
+        <nav className={`z-[100] flex h-16 w-full items-center justify-center border-b-[1px] border-b-richblack-700/50 text-white transition-all duration-300 ${showNavbar === 'hide' ? '-translate-y-full' : 'translate-y-0'} ${showNavbar !== 'top' ? 'bg-richblack-900/70 backdrop-blur-md shadow-glass' : 'bg-transparent'} fixed top-0 left-0 right-0`}>
              {/* <nav className={` fixed flex items-center justify-center w-full h-16 z-[10] translate-y-0 transition-all text-white ${showNavbar}`}> */}
             <div className='flex w-11/12 max-w-maxContent items-center justify-between '>
                 {/* logo */}
-                <Link to="/" className="hover:scale-105 transition-transform duration-300">
-                    <img src={studyNotionLogo} width={160} height={42} loading='lazy' alt="LearnHub Logo" />
+                <Link to="/" className="flex items-center gap-3 hover:scale-105 transition-transform duration-300">
+                    <img src={axioraLogoLight} className="h-12 w-auto object-contain" loading='lazy' alt="Axiora Logo" />
+                    <span className="text-2xl font-bold text-richblack-5 tracking-wide">Axiora</span>
                 </Link>
 
                 {/* Nav Links - visible for only large devices*/}
@@ -109,10 +110,10 @@ const Navbar = () => {
                                             <MdKeyboardArrowDown />
                                             {/* drop down menu */}
                                             <div className="invisible absolute left-[50%] top-[50%] z-[1000] flex w-[200px] translate-x-[-50%] translate-y-[3em] 
-                                                    flex-col rounded-lg bg-richblack-5 p-4 text-richblack-900 opacity-0 transition-all duration-150 group-hover:visible 
+                                                    flex-col rounded-lg bg-richblack-800 p-4 text-richblack-25 border border-richblack-700 shadow-[0_0_20px_rgba(59,130,246,0.3)] opacity-0 transition-all duration-150 group-hover:visible 
                                                     group-hover:translate-y-[1.65em] group-hover:opacity-100 lg:w-[300px]"
                                             >
-                                                <div className="absolute left-[50%] top-0 z-[100] h-6 w-6 translate-x-[80%] translate-y-[-40%] rotate-45 select-none rounded bg-richblack-5"></div>
+                                                <div className="absolute left-[50%] top-0 z-[100] h-6 w-6 translate-x-[80%] translate-y-[-40%] rotate-45 select-none rounded bg-richblack-800 border-l border-t border-richblack-700"></div>
                                                 {loading ? (<p className="text-center ">Loading...</p>)
                                                     : subLinks.length ? (
                                                         <>
@@ -122,7 +123,7 @@ const Navbar = () => {
                                                                         .split(" ")
                                                                         .join("-")
                                                                         .toLowerCase()}`}
-                                                                    className="rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50"
+                                                                    className="rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-700 hover:text-blue-300 transition-all duration-200"
                                                                     key={i}
                                                                 >
                                                                     <p>{subLink.name}</p>

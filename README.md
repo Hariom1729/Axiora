@@ -1,9 +1,9 @@
 # Project Description 📝
 
-LearnHub is a fully functional ed-tech platform that enables users to create, consume, and rate educational content. <br/>
+Axiora is a fully functional ed-tech platform that enables users to create, consume, and rate educational content. <br/>
 The platform is built using the **MERN stack**, which includes ReactJS, NodeJS, MongoDB, and ExpressJS.
 
-## LearnHub Aim 📚
+## Axiora Aim 📚
 
 <br/>
 1️⃣ A seamless and interactive learning experience for students, making education more accessible and engaging.<br/>
@@ -23,8 +23,8 @@ To get the project running locally on your machine, follow these steps:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/Hariom1729/LearnHub.git
-cd LearnHub
+git clone https://github.com/Hariom1729/Axiora.git
+cd Axiora
 ```
 
 ### 2. Install Dependencies
@@ -103,7 +103,7 @@ npm run dev
 ## System Architecture 🏰
 
 <br/>
-☝ The LearnHub ed-tech platform consists of three main components:  <br/>
+☝ The Axiora ed-tech platform consists of three main components:  <br/>
 The front end, the back end, and the database. The platform follows a client-server architecture, with the front end serving as the client and the back end and database serving as the server.
 
 🎨 Front-end <br/>
@@ -120,7 +120,7 @@ The database for the platform is built using MongoDB, which is a NoSQL database 
 <br/>
 <hr/>
 
-#### The front end of LearnHub has all the necessary pages that an ed-tech platform should have. Some of these pages are:
+#### The front end of Axiora has all the necessary pages that an ed-tech platform should have. Some of these pages are:
 
 For Students:
 
@@ -148,12 +148,12 @@ The back-end of the platform is built using NodeJS and ExpressJS, providing APIs
 - **User Authentication and Authorization 🔐:** Students and instructors can sign up and log in to the platform using their email addresses and passwords. The platform also supports OTP (One-Time Password) verification and forgot password functionality for added security.
 - **Course Management 🛠️:** Instructors can create, read, update, and delete courses, as well as manage course content and media. Students can view and rate courses.
 - **Payment Integration 💳:** Students will purchase and enroll in courses by completing the checkout flow, followed by Razorpay integration for payment handling.
-- **Cloud-based Media Management ☁️ :** StudyNotion uses Cloudinary, a cloud-based media management service, to store and manage all media content, including images, videos, and documents.
+- **Cloud-based Media Management ☁️ :** Axiora uses Cloudinary, a cloud-based media management service, to store and manage all media content, including images, videos, and documents.
 - **Markdown Formatting ✍️:** Course content in document format is stored in Markdown format, allowing for easier display and rendering on the front-end.
 
 #### Data Models and Database Schema
 
-The back-end of StudyNotion uses several data models and database schemas to manage data, including:
+The back-end of Axiora uses several data models and database schemas to manage data, including:
 
 - **Student Schema 🧑‍🎓:** Includes fields such as name, email, password, and course details for each student.
 - **Instructor Schema 👩‍🏫:** Includes fields such as name, email, password, and course details for each instructor.
@@ -198,7 +198,7 @@ Utilized several React hooks for efficient state management and dynamic behavior
 
 ## API Design
 
-The StudyNotion platform's API is designed following the REST architectural style. The
+The Axiora platform's API is designed following the REST architectural style. The
 API is implemented using Node.js and Express.js. It uses JSON for data exchange and
 follows standard HTTP request methods such as GET, POST, PUT, and DELETE.
 Sample list of API endpoints and their functionalities:
