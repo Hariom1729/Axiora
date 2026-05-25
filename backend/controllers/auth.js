@@ -41,8 +41,8 @@ exports.sendOTP = async (req, res) => {
         const name = email.split('@')[0].split('.').map(part => part.replace(/\d+/g, '')).join(' ');
         console.log(name);
 
-        // send otp in mail (asynchronously to prevent blocking)
-        mailSender(email, 'OTP Verification Email', otpTemplate(otp, name)).catch(console.error);
+        // send otp in mail
+        await mailSender(email, 'OTP Verification Email', otpTemplate(otp, name));
 
         // create an entry for otp in DB
         const otpBody = await OTP.create({ email, otp });
