@@ -1,81 +1,71 @@
 // AUTH , IS STUDENT , IS INSTRUCTOR , IS ADMIN
 
-const jwt = require("jsonwebtoken");
+const admin = require('../config/firebase');
+const User = require('../models/user');
 require('dotenv').config();
 
 
 // ================ AUTH ================
-// user Authentication by checking token validating
-exports.auth = (req, res, next) => {
+// Verify Firebase ID token and attach MongoDB user to req.user
+exports.auth = async (req, res, next) => {
     try {
-        // extract token by anyone from this 3 ways
-        const token = req.body?.token || req.cookies?.token || req.header('Authorization')?.replace('Bearer ', '');
+        // Extract token from Authorization header
+        const authHeader = req.header('Authorization');
+        const token = authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : null;
 
-        // if token is missing
+        // If token is missing
         if (!token) {
             return res.status(401).json({
                 success: false,
-                message: 'Token is Missing'
+                message: 'Authorization token is missing',
             });
         }
 
-        // console.log('Token ==> ', token);
-        // console.log('From body -> ', req.body?.token);
-        // console.log('from cookies -> ', req.cookies?.token);
-        // console.log('from headers -> ', req.header('Authorization')?.replace('Bearer ', ''));
-
-        // verify token
+        // Verify Firebase ID token
+        let decodedToken;
         try {
-            const decode = jwt.verify(token, process.env.JWT_SECRET);
-            // console.log('verified decode token => ', decode);
-            
-            // *********** example from console ***********
-            // verified decode token =>  {
-            //     email: 'buydavumli@biyac.com',
-            //     id: '650d6ae2914831142c702e4c',
-            //     accountType: 'Student',
-            //     iat: 1699452446,
-            //     exp: 1699538846
-            //   }
-            req.user = decode;
-        }
-        catch (error) {
-            console.log('Error while decoding token');
-            console.log(error);
+            decodedToken = await admin.auth().verifyIdToken(token);
+        } catch (error) {
+            console.log('Error while verifying Firebase token:', error.message);
             return res.status(401).json({
                 success: false,
+                message: 'Invalid or expired token',
                 error: error.message,
-                messgae: 'Error while decoding token'
-            })
+            });
         }
-        // go to next middleware
+
+        // Find MongoDB user by Firebase UID
+        const user = await User.findOne({ firebaseUid: decodedToken.uid }).populate('additionalDetails');
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found. Please complete registration first.',
+            });
+        }
+
+        // Attach full MongoDB user to req.user
+        req.user = user;
         next();
-    }
-    catch (error) {
-        console.log('Error while token validating');
-        console.log(error);
+    } catch (error) {
+        console.log('Error in auth middleware:', error);
         return res.status(500).json({
             success: false,
-            messgae: 'Error while token validating'
-        })
+            message: 'Error while authenticating user',
+        });
     }
-}
-
-
-
+};
 
 
 // ================ IS STUDENT ================
 exports.isStudent = (req, res, next) => {
     try {
-        // console.log('User data -> ', req.user)
         if (req.user?.accountType != 'Student') {
             return res.status(401).json({
                 success: false,
                 messgae: 'This Page is protected only for student'
             })
         }
-        // go to next middleware
         next();
     }
     catch (error) {
@@ -93,14 +83,12 @@ exports.isStudent = (req, res, next) => {
 // ================ IS INSTRUCTOR ================
 exports.isInstructor = (req, res, next) => {
     try {
-        // console.log('User data -> ', req.user)
         if (req.user?.accountType != 'Instructor') {
             return res.status(401).json({
                 success: false,
                 messgae: 'This Page is protected only for Instructor'
             })
         }
-        // go to next middleware
         next();
     }
     catch (error) {
@@ -118,14 +106,12 @@ exports.isInstructor = (req, res, next) => {
 // ================ IS ADMIN ================
 exports.isAdmin = (req, res, next) => {
     try {
-        // console.log('User data -> ', req.user)
         if (req.user.accountType != 'Admin') {
             return res.status(401).json({
                 success: false,
                 messgae: 'This Page is protected only for Admin'
             })
         }
-        // go to next middleware
         next();
     }
     catch (error) {
@@ -138,5 +124,3 @@ exports.isAdmin = (req, res, next) => {
         })
     }
 }
-
-

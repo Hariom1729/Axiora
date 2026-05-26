@@ -3,52 +3,31 @@ const router = express.Router();
 
 // Controllers
 const {
-    signup,
-    login,
-    sendOTP,
+    firebaseLogin,
+    getCurrentUser,
     changePassword
 } = require('../controllers/auth');
-
-// Resetpassword controllers
-const {
-    resetPasswordToken,
-    resetPassword,
-} = require('../controllers/resetPassword');
-
 
 // Middleware
 const { auth } = require('../middleware/auth');
 
 
-// Routes for Login, Signup, and Authentication
-
 // ********************************************************************************************************
 //                                      Authentication routes
 // ********************************************************************************************************
 
-// Route for user signup
-router.post('/signup', signup);
+// Route for Firebase login (find or create user after frontend Firebase auth)
 
-// Route for user login
-router.post('/login', login);
+// Route for Firebase login (find or create user after frontend Firebase auth)
+// Note: firebaseLogin handles its own token verification internally,
+// so we don't use the auth middleware here (user may not exist in MongoDB yet)
+router.post('/firebase-login', firebaseLogin);
 
-// Route for sending OTP to the user's email
-router.post('/sendotp', sendOTP);
+// Route for getting current authenticated user
+router.get('/me', auth, getCurrentUser);
 
-// Route for Changing the password
+// Route for changing the password (delegates to Firebase Admin SDK)
 router.post('/changepassword', auth, changePassword);
 
 
-
-// ********************************************************************************************************
-//                                      Reset Password
-// ********************************************************************************************************
-
-// Route for generating a reset password token
-router.post('/reset-password-token', resetPasswordToken);
-
-// Route for resetting user's password after verification
-router.post("/reset-password", resetPassword)
-
-
-module.exports = router
+module.exports = router;

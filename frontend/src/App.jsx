@@ -1,16 +1,22 @@
 
 import { useEffect, useState } from "react";
 import { Route, Routes, useLocation, Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { onAuthStateChanged } from "firebase/auth";
+
+import { auth } from "./firebase";
+import { setToken } from "./slices/authSlice";
+import { setUser } from "./slices/profileSlice";
+import { apiConnector } from "./services/apiConnector";
+import { endpoints } from "./services/apis";
 
 import Home from "./pages/Home"
 import Login from "./pages/Login"
 import Signup from "./pages/Signup"
+import VerifyEmail from "./pages/VerifyEmail"
 import { AnimatePresence } from "framer-motion";
 import PageTransition from "./components/common/animations/PageTransition";
 import ForgotPassword from "./pages/ForgotPassword";
-import UpdatePassword from "./pages/UpdatePassword";
-import VerifyEmail from "./pages/VerifyEmail";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import PageNotFound from "./pages/PageNotFound";
@@ -41,10 +47,14 @@ import { ACCOUNT_TYPE } from './utils/constants';
 
 import { HiArrowNarrowUp } from "react-icons/hi"
 
+const { GET_ME_API } = endpoints;
+
 
 function App() {
 
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.profile)
+  const { token } = useSelector((state) => state.auth)
 
   // Scroll to the top of the page when the component mounts
   const location = useLocation();
@@ -58,6 +68,46 @@ function App() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, [])
+
+
+  // Firebase auth state listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const idToken = await firebaseUser.getIdToken()
+          const response = await apiConnector("GET", GET_ME_API, null, {
+            Authorization: `Bearer ${idToken}`,
+          })
+
+          if (response.data.success) {
+            dispatch(setToken(idToken))
+
+            const userImage = response.data?.user?.image
+              ? response.data.user.image
+              : `https://api.dicebear.com/5.x/initials/svg?seed=${response.data.user.firstName} ${response.data.user.lastName}`
+
+            dispatch(setUser({ ...response.data.user, image: userImage }))
+            localStorage.setItem("token", JSON.stringify(idToken))
+            localStorage.setItem("user", JSON.stringify({ ...response.data.user, image: userImage }))
+          }
+        } catch (error) {
+          console.log("AUTH STATE ERROR --> ", error)
+        }
+      } else {
+        // No firebase user — clear state only if we were previously logged in
+        if (token) {
+          dispatch(setToken(null))
+          dispatch(setUser(null))
+          localStorage.removeItem("token")
+          localStorage.removeItem("user")
+        }
+      }
+    })
+
+    return () => unsubscribe()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
 
@@ -96,11 +146,18 @@ function App() {
           <Route path="catalog/:catalogName" element={<PageTransition><Catalog /></PageTransition>} />
           <Route path="courses/:courseId" element={<PageTransition><CourseDetails /></PageTransition>} />
 
-          {/* Open Route - for Only Non Logged in User */}
           <Route
             path="signup" element={
               <OpenRoute>
                 <PageTransition><Signup /></PageTransition>
+              </OpenRoute>
+            }
+          />
+
+          <Route
+            path="verify-email" element={
+              <OpenRoute>
+                <PageTransition><VerifyEmail /></PageTransition>
               </OpenRoute>
             }
           />
@@ -117,22 +174,6 @@ function App() {
             path="forgot-password" element={
               <OpenRoute>
                 <PageTransition><ForgotPassword /></PageTransition>
-              </OpenRoute>
-            }
-          />
-
-          <Route
-            path="verify-email" element={
-              <OpenRoute>
-                <PageTransition><VerifyEmail /></PageTransition>
-              </OpenRoute>
-            }
-          />
-
-          <Route
-            path="update-password/:id" element={
-              <OpenRoute>
-                <PageTransition><UpdatePassword /></PageTransition>
               </OpenRoute>
             }
           />

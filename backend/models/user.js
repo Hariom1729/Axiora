@@ -2,6 +2,11 @@ const mongoose = require('mongoose')
 
 const userSchema = new mongoose.Schema(
     {
+        firebaseUid: {
+            type: String,
+            unique: true,
+            sparse: true,
+        },
         firstName: {
             type: String,
             required: true,
@@ -17,9 +22,13 @@ const userSchema = new mongoose.Schema(
             required: true,
             trim: true
         },
+        contactNumber: {
+            type: String,
+            trim: true
+        },
         password: {
             type: String,
-            required: true
+            // Not required — Google OAuth users won't have a local password
         },
         accountType: {
             type: String,
@@ -49,19 +58,16 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        token: {
-            type: String
-        },
-        resetPasswordTokenExpires: {
-            type: Date
-        },
         courseProgress: [
             {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'CourseProgress'
 
             }
-        ]
+        ],
+        lastLogin: {
+            type: Date,
+        },
     },// Add timestamps for when the document is created and last modified
     { timestamps: true }
 );

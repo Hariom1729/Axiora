@@ -2,11 +2,10 @@ const BASE_URL = import.meta.env.VITE_APP_BASE_URL;
 
 // AUTH ENDPOINTS
 export const endpoints = {
+  FIREBASE_LOGIN_API: BASE_URL + "/auth/firebase-login",
+  GET_ME_API: BASE_URL + "/auth/me",
   SENDOTP_API: BASE_URL + "/auth/sendotp",
-  SIGNUP_API: BASE_URL + "/auth/signup",
-  LOGIN_API: BASE_URL + "/auth/login",
-  RESETPASSTOKEN_API: BASE_URL + "/auth/reset-password-token",
-  RESETPASSWORD_API: BASE_URL + "/auth/reset-password",
+  SIGNUP_VERIFY_API: BASE_URL + "/auth/verify-otp",
 }
 
 // PROFILE ENDPOINTS
