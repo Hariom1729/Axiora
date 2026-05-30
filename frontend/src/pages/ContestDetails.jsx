@@ -127,7 +127,7 @@ const ContestDetails = () => {
     const isEnded = contest.status === 'Ended';
 
     return (
-        <div className="w-11/12 max-w-4xl mx-auto text-white mt-8 mb-20 p-4 min-h-[calc(100vh-8rem)]">
+        <div className="w-11/12 max-w-4xl mx-auto text-white mt-24 mb-20 p-4 min-h-[calc(100vh-8rem)]">
             {/* Back to Contests link */}
             <button 
                 onClick={() => navigate('/contests')}
@@ -139,10 +139,8 @@ const ContestDetails = () => {
             <motion.div 
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative overflow-hidden bg-gradient-to-b from-richblack-800/80 to-richblack-900/90 rounded-3xl border border-richblack-800 p-8 md:p-10 shadow-2xl flex flex-col gap-8"
+                className="relative flex flex-col gap-8 py-4"
             >
-                {/* Visual side glow effects */}
-                <div className="absolute -top-10 -right-10 w-44 h-44 bg-yellow-100 opacity-5 rounded-full blur-[60px] pointer-events-none" />
 
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-richblack-800">
