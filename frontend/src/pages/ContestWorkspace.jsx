@@ -7,6 +7,7 @@ import Editor from '@monaco-editor/react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { VscChevronLeft, VscCheck, VscSymbolMethod, VscPlay, VscArrowRight } from 'react-icons/vsc';
+import { FaSun, FaMoon, FaPalette } from 'react-icons/fa';
 
 const ContestWorkspace = () => {
     const { contestId } = useParams();
@@ -23,6 +24,7 @@ const ContestWorkspace = () => {
     const [submitting, setSubmitting] = useState(false);
     const [consoleOutput, setConsoleOutput] = useState('');
     const [timeLeft, setTimeLeft] = useState('');
+    const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'colorful'
 
     // Tab switch detector (Anti-cheat)
     useEffect(() => {
@@ -170,53 +172,150 @@ const ContestWorkspace = () => {
         return (
             <div className="h-screen w-screen bg-richblack-950 flex flex-col items-center justify-center text-white">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-50 mb-4"></div>
-                <p className="text-richblack-200">Entering Secure Contest Workspace...</p>
+                <p className="text-richblack-200 font-mono text-xs">ENTERING SECURE CONTEST ROOM...</p>
             </div>
         );
     }
 
     if (!contest) return null;
 
+    // Theme style mapping dictionary
+    const themeStyles = {
+        light: {
+            bg: 'bg-[#F8F9FA] text-[#1E293B]',
+            header: 'bg-[#FFFFFF] border-b border-[#E2E8F0] text-[#1E293B]',
+            sidebar: 'bg-[#FFFFFF] border-r border-[#E2E8F0] text-[#1E293B]',
+            sidebarCardSelected: 'bg-[#EFF6FF] text-[#1E293B] border-[#3B82F6] shadow-sm',
+            sidebarCardUnselected: 'bg-[#FFFFFF] hover:bg-[#F1F5F9] border-[#E2E8F0] text-[#475569]',
+            cardPanel: 'bg-[#FFFFFF] border border-[#E2E8F0] text-[#1E293B]',
+            optPillSelected: 'border-[#3B82F6] bg-[#EFF6FF] text-[#1E293B] shadow-sm',
+            optPillUnselected: 'border-[#E2E8F0] bg-[#FFFFFF] hover:bg-[#F1F5F9] text-[#1E293B]',
+            optDotSelected: 'border-[#3B82F6] bg-[#3B82F6] text-white',
+            optDotUnselected: 'border-[#94A3B8] bg-white',
+            detailsPanel: 'bg-[#F1F5F9] border border-[#E2E8F0] text-[#475569]',
+            detailsPanelLabel: 'text-[#64748B]',
+            detailsPanelVal: 'bg-[#E2E8F0] text-[#1E293B]',
+            btnPrimary: 'bg-[#3B82F6] hover:bg-[#2563EB] text-white shadow-sm',
+            console: 'bg-[#0F172A] text-emerald-400 border-t border-[#E2E8F0]',
+            divider: 'bg-[#E2E8F0]',
+            btnBack: 'hover:bg-[#F1F5F9] text-[#475569] hover:text-black',
+            txtMuted: 'text-[#64748B]',
+            editorBorder: 'border-r border-[#E2E8F0]'
+        },
+        dark: {
+            bg: 'bg-richblack-950 text-white',
+            header: 'bg-richblack-900/60 border-b border-richblack-800 text-white',
+            sidebar: 'bg-richblack-900 border-r border-richblack-800 text-white',
+            sidebarCardSelected: 'bg-yellow-25 text-black border-yellow-25 shadow-glass',
+            sidebarCardUnselected: 'bg-richblack-800 hover:bg-richblack-700 border-richblack-800 text-richblack-200',
+            cardPanel: 'bg-[#1C1D24] border border-richblack-800 text-white',
+            optPillSelected: 'border-[#12D8FA] bg-[#1C1D24] shadow-[0_0_15px_rgba(18,216,250,0.08)] text-white',
+            optPillUnselected: 'border-richblack-800 bg-[#1C1D24]/40 text-white',
+            optDotSelected: 'border-[#12D8FA] bg-[#12D8FA] text-black',
+            optDotUnselected: 'border-richblack-600 bg-transparent',
+            detailsPanel: 'bg-[#1C1D24] border border-richblack-800 text-richblack-400',
+            detailsPanelLabel: 'text-richblack-400',
+            detailsPanelVal: 'bg-richblack-850 text-white',
+            btnPrimary: 'bg-yellow-50 hover:bg-yellow-100 text-black',
+            console: 'bg-richblack-900/40 text-caribbeangreen-200 border-t border-richblack-800',
+            divider: 'bg-richblack-800',
+            btnBack: 'hover:bg-richblack-800 text-richblack-300 hover:text-white',
+            txtMuted: 'text-richblack-400',
+            editorBorder: 'border-r border-richblack-800'
+        },
+        colorful: {
+            bg: 'bg-[#0d091a] text-[#f1ebff]',
+            header: 'bg-[#140e2b]/80 border-b border-[#3c1e70] text-white',
+            sidebar: 'bg-[#140e2b] border-r border-[#3c1e70] text-[#f1ebff]',
+            sidebarCardSelected: 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white border-transparent shadow-[0_0_15px_rgba(139,92,246,0.3)]',
+            sidebarCardUnselected: 'bg-[#20163f] hover:bg-[#2b1f54] border-[#3c1e70] text-[#cbd5e1]',
+            cardPanel: 'bg-[#191136] border border-[#3c1e70] text-[#f1ebff]',
+            optPillSelected: 'border-[#ec4899] bg-[#27164b] shadow-[0_0_15px_rgba(236,72,153,0.15)] text-white',
+            optPillUnselected: 'border-[#3c1e70] bg-[#191136]/40 text-[#f1ebff]',
+            optDotSelected: 'border-[#ec4899] bg-[#ec4899] text-white',
+            optDotUnselected: 'border-[#5c3c9e] bg-transparent',
+            detailsPanel: 'bg-[#191136] border border-[#3c1e70] text-[#cbd5e1]',
+            detailsPanelLabel: 'text-[#cbd5e1]',
+            detailsPanelVal: 'bg-[#2a1b54] text-white',
+            btnPrimary: 'bg-[#ec4899] hover:bg-[#db2777] text-white shadow-[0_0_15px_rgba(236,72,153,0.3)]',
+            console: 'bg-[#080410] text-[#ec4899] border-t border-[#3c1e70]',
+            divider: 'bg-[#3c1e70]',
+            btnBack: 'hover:bg-[#20163f] text-[#cbd5e1] hover:text-white',
+            txtMuted: 'text-[#5c3c9e]',
+            editorBorder: 'border-r border-[#3c1e70]'
+        }
+    };
+
+    const currentStyle = themeStyles[theme];
+
     return (
-        <div className="h-screen w-screen bg-richblack-950 text-white flex flex-col font-inter overflow-hidden select-none">
+        <div className={`h-screen w-screen flex flex-col font-inter overflow-hidden select-none transition-colors duration-300 ${currentStyle.bg}`}>
+            
             {/* Top Workspace Header */}
-            <header className="h-14 border-b border-richblack-800 bg-richblack-900/60 backdrop-blur-md flex items-center justify-between px-6 z-50">
+            <header className={`h-14 backdrop-blur-md flex items-center justify-between px-6 z-50 transition-colors duration-300 ${currentStyle.header}`}>
                 <div className="flex items-center gap-4">
                     <button 
                         onClick={() => navigate(`/contests/${contestId}`)}
-                        className="p-2 hover:bg-richblack-800 rounded-lg transition-colors text-richblack-300 hover:text-white"
+                        className={`p-2 rounded-lg transition-colors ${currentStyle.btnBack}`}
                     >
                         <VscChevronLeft size={20} />
                     </button>
-                    <span className="h-4 w-[1px] bg-richblack-800"></span>
-                    <h1 className="font-bold text-base bg-gradient-to-r from-yellow-50 to-yellow-200 text-transparent bg-clip-text truncate max-w-[250px]">
+                    <span className={`h-4 w-[1px] ${currentStyle.divider}`}></span>
+                    <h1 className="font-bold text-base truncate max-w-[200px]">
                         {contest.title}
                     </h1>
                     <span className="bg-yellow-25/10 text-yellow-50 text-[10px] font-semibold px-2 py-0.5 rounded border border-yellow-25/20 uppercase">
                         {contest.type}
                     </span>
-                    <span className="h-4 w-[1px] bg-richblack-800"></span>
+                    <span className={`h-4 w-[1px] ${currentStyle.divider}`}></span>
                     <button 
                         onClick={() => navigate(`/contests/${contestId}/leaderboard`)}
-                        className="text-xs text-richblack-300 hover:text-yellow-50 hover:underline transition-all"
+                        className="text-xs text-yellow-50 hover:underline transition-all font-semibold"
                     >
                         View Leaderboard
                     </button>
                 </div>
 
-                {/* Secure Countdown timer & Submit & Exit */}
-                <div className="flex items-center gap-4">
-                    <span className="text-xs text-richblack-400 font-medium">Time Remaining</span>
-                    <div className="bg-pink-900/20 text-pink-200 font-mono font-bold px-3 py-1.5 rounded-lg border border-pink-500/20 text-sm tracking-wider">
-                        {timeLeft}
+                {/* Theme switch triggers & secure countdown timer */}
+                <div className="flex items-center gap-6">
+                    {/* Theme Controls */}
+                    <div className="flex bg-white/5 border border-white/10 rounded-lg p-0.5 gap-0.5">
+                        <button 
+                            onClick={() => setTheme('light')}
+                            className={`p-1.5 rounded-md transition-all ${theme === 'light' ? 'bg-[#3B82F6] text-white shadow-sm' : 'text-richblack-400 hover:text-white'}`}
+                            title="Light Theme"
+                        >
+                            <FaSun size={12} />
+                        </button>
+                        <button 
+                            onClick={() => setTheme('dark')}
+                            className={`p-1.5 rounded-md transition-all ${theme === 'dark' ? 'bg-yellow-50 text-black shadow-sm' : 'text-richblack-400 hover:text-white'}`}
+                            title="Dark Theme"
+                        >
+                            <FaMoon size={12} />
+                        </button>
+                        <button 
+                            onClick={() => setTheme('colorful')}
+                            className={`p-1.5 rounded-md transition-all ${theme === 'colorful' ? 'bg-[#ec4899] text-white shadow-sm' : 'text-richblack-400 hover:text-white'}`}
+                            title="Cyberpunk Theme"
+                        >
+                            <FaPalette size={12} />
+                        </button>
                     </div>
-                    <button
-                        onClick={handleCompleteContest}
-                        disabled={submitting}
-                        className="bg-pink-500 hover:bg-pink-400 text-white text-xs px-3.5 py-1.5 rounded-lg font-bold transition-all shadow-lg uppercase tracking-wider"
-                    >
-                        Submit & Exit
-                    </button>
+
+                    <div className="flex items-center gap-4">
+                        <span className="text-xs text-richblack-400 font-medium">Time Remaining</span>
+                        <div className="bg-pink-900/20 text-pink-200 font-mono font-bold px-3 py-1.5 rounded-lg border border-pink-500/20 text-sm tracking-wider">
+                            {timeLeft}
+                        </div>
+                        <button
+                            onClick={handleCompleteContest}
+                            disabled={submitting}
+                            className="bg-pink-500 hover:bg-pink-400 text-white text-xs px-3.5 py-1.5 rounded-lg font-bold transition-all shadow-lg uppercase tracking-wider"
+                        >
+                            Submit & Exit
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -224,8 +323,10 @@ const ContestWorkspace = () => {
             <div className="flex-1 flex overflow-hidden">
                 
                 {/* Left Sidebar - Question index switcher */}
-                <div className="w-64 bg-richblack-900 border-r border-richblack-800 flex flex-col p-4 space-y-4">
-                    <span className="text-[10px] font-bold tracking-wider text-richblack-400 uppercase">Question Navigation</span>
+                <div className={`w-64 flex flex-col p-4 space-y-4 transition-colors duration-300 ${currentStyle.sidebar}`}>
+                    <span className="text-[10px] font-bold tracking-wider text-richblack-400 uppercase">
+                        Question ({problems.length})
+                    </span>
                     <div className="flex-1 overflow-y-auto space-y-2 pr-1">
                         {problems.map((prob, i) => {
                             const isSelected = selectedProblemIndex === i;
@@ -237,13 +338,13 @@ const ContestWorkspace = () => {
                                         setMcqAnswer('');
                                         setConsoleOutput('');
                                     }}
-                                    className={`w-full text-left p-3 rounded-xl border flex items-center justify-between transition-all duration-200 group ${isSelected ? 'bg-yellow-25 text-black border-yellow-25 shadow-glass' : 'bg-richblack-800 hover:bg-richblack-700 border-richblack-800'}`}
+                                    className={`w-full text-left p-3 rounded-xl border flex items-center justify-between transition-all duration-200 group ${isSelected ? currentStyle.sidebarCardSelected : currentStyle.sidebarCardUnselected}`}
                                 >
                                     <div className="truncate">
                                         <span className="text-[9px] block uppercase font-bold opacity-60">Q {i + 1} • {prob.type}</span>
                                         <span className="font-semibold text-sm truncate block">{prob.title}</span>
                                     </div>
-                                    {isSelected && <VscArrowRight size={14} className="text-black ml-2" />}
+                                    {isSelected && <VscArrowRight size={14} className="ml-2 shrink-0" />}
                                 </button>
                             );
                         })}
@@ -251,13 +352,13 @@ const ContestWorkspace = () => {
                 </div>
 
                 {/* Right panel: content area */}
-                <div className="flex-1 flex overflow-hidden bg-richblack-950">
+                <div className="flex-1 flex overflow-hidden">
                     {activeProblem ? (
                         <>
                             {/* Problem details panel */}
-                            <div className="w-1/2 overflow-y-auto p-8 space-y-6 border-r border-richblack-800">
+                            <div className={`w-1/2 overflow-y-auto p-8 space-y-6 ${currentStyle.editorBorder}`}>
                                 <div className="flex justify-between items-center">
-                                    <span className="bg-richblack-800 border border-richblack-700 text-yellow-50 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+                                    <span className="bg-yellow-25/10 text-yellow-50 text-[10px] font-bold px-2 py-0.5 rounded border border-yellow-25/20 uppercase">
                                         {activeProblem.difficulty}
                                     </span>
                                 </div>
@@ -285,18 +386,18 @@ const ContestWorkspace = () => {
                                         )}
                                     </div>
                                 ) : (
-                                    // MCQ Option Panel (Refactored to mirror reference design)
+                                    // MCQ Option Panel (Clean alignment inspired by Light mode mockup details)
                                     <div className="space-y-6">
                                         {/* Type Header Tag */}
                                         <div className="flex items-center justify-between">
-                                            <span className="flex items-center gap-1.5 bg-[#1C1D24] border border-richblack-800 text-richblack-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold select-none">
-                                                <VscSymbolMethod className="text-yellow-50" /> Multiple choice
+                                            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold select-none ${currentStyle.detailsPanelVal}`}>
+                                                <VscSymbolMethod /> Multiple choice
                                             </span>
                                             <span className="text-[10px] text-richblack-500 font-bold uppercase tracking-widest font-mono">Question {selectedProblemIndex + 1} of {problems.length}</span>
                                         </div>
 
                                         {/* Statement Card */}
-                                        <div className="bg-[#1C1D24] p-6 rounded-2xl border border-richblack-800 text-white text-base md:text-lg font-bold leading-relaxed whitespace-pre-wrap">
+                                        <div className={`p-6 rounded-2xl text-base md:text-lg font-bold leading-relaxed whitespace-pre-wrap ${currentStyle.cardPanel}`}>
                                             {activeProblem.statement || activeProblem.title}
                                         </div>
 
@@ -308,14 +409,14 @@ const ContestWorkspace = () => {
                                                 return (
                                                     <label 
                                                         key={i} 
-                                                        className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer hover:bg-[#262833]/60 transition-all duration-200 group ${isSelected ? 'border-[#12D8FA] bg-[#1C1D24] shadow-[0_0_15px_rgba(18,216,250,0.08)]' : 'border-richblack-800 bg-[#1C1D24]/40'}`}
+                                                        className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all duration-200 group ${isSelected ? currentStyle.optPillSelected : currentStyle.optPillUnselected}`}
                                                     >
                                                         <div className="flex items-center gap-4">
                                                             {/* Custom Styled Circle */}
-                                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-[#12D8FA] bg-[#12D8FA]' : 'border-richblack-600 bg-transparent group-hover:border-richblack-400'}`}>
-                                                                {isSelected && <VscCheck className="text-black font-extrabold" size={12} />}
+                                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? currentStyle.optDotSelected : currentStyle.optDotUnselected}`}>
+                                                                {isSelected && <VscCheck size={12} className={theme === 'light' ? 'text-white' : 'text-black'} />}
                                                             </div>
-                                                            <span className="text-sm font-medium text-white select-none">{opt}</span>
+                                                            <span className="text-sm font-semibold select-none">{opt}</span>
                                                         </div>
                                                         <input
                                                             type="radio"
@@ -330,28 +431,28 @@ const ContestWorkspace = () => {
                                             })}
                                         </div>
 
-                                        {/* Mark as points Card */}
+                                        {/* Mark as points Cards */}
                                         <div className="grid grid-cols-2 gap-4 mt-6">
-                                            <div className="flex justify-between items-center bg-[#1C1D24] p-4 rounded-xl border border-richblack-800 text-xs font-semibold text-richblack-400">
-                                                <span>Estimation time</span>
-                                                <span className="font-mono text-white bg-richblack-850 px-2.5 py-1 rounded-md">2 Mins</span>
+                                            <div className={`flex justify-between items-center p-4 rounded-xl text-xs font-semibold ${currentStyle.detailsPanel}`}>
+                                                <span className={currentStyle.detailsPanelLabel}>Estimation time</span>
+                                                <span className={`font-mono px-2.5 py-1 rounded-md text-[10px] ${currentStyle.detailsPanelVal}`}>2 Mins</span>
                                             </div>
-                                            <div className="flex justify-between items-center bg-[#1C1D24] p-4 rounded-xl border border-richblack-800 text-xs font-semibold text-richblack-400">
-                                                <span>Mark as point</span>
-                                                <span className="bg-[#12D8FA]/10 border border-[#12D8FA]/20 text-[#12D8FA] px-2.5 py-1 rounded-md font-bold font-mono">1 Points</span>
+                                            <div className={`flex justify-between items-center p-4 rounded-xl text-xs font-semibold ${currentStyle.detailsPanel}`}>
+                                                <span className={currentStyle.detailsPanelLabel}>Mark as point</span>
+                                                <span className={`font-mono px-2.5 py-1 rounded-md text-[10px] ${currentStyle.detailsPanelVal}`}>1 Points</span>
                                             </div>
                                         </div>
 
                                         <button
                                             onClick={handleSubmitMcq}
                                             disabled={submitting}
-                                            className="w-full bg-yellow-50 text-black font-bold py-3.5 rounded-xl hover:bg-yellow-100 transition-all text-sm uppercase tracking-wider mt-4"
+                                            className={`w-full font-bold py-3.5 rounded-xl transition-all text-sm uppercase tracking-wider mt-4 ${currentStyle.btnPrimary}`}
                                         >
                                             {submitting ? 'Submitting Choice...' : 'Submit Choice'}
                                         </button>
                                     </div>
                                 )}
-                            </div>
+                             </div>
 
                             {/* Coding Editor playground */}
                             {activeProblem.type === 'Coding' && (
@@ -371,7 +472,7 @@ const ContestWorkspace = () => {
                                         <div className="flex gap-2">
                                             <button 
                                                 onClick={handleRunCode} 
-                                                className="bg-richblack-800 border border-richblack-700 hover:bg-richblack-700 text-[11px] px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all"
+                                                className="bg-richblack-800 border border-richblack-700 hover:bg-richblack-700 text-[11px] px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all text-white"
                                             >
                                                 <VscPlay /> Run Code
                                             </button>
@@ -386,7 +487,7 @@ const ContestWorkspace = () => {
                                         <Editor
                                             height="100%"
                                             language={language}
-                                            theme="vs-dark"
+                                            theme={theme === 'light' ? 'light' : 'vs-dark'}
                                             value={code}
                                             onChange={(val) => setCode(val || '')}
                                             options={{
