@@ -285,14 +285,16 @@ const ContestDetails = () => {
                     {isCompleted ? (
                         <button
                             onClick={() => navigate(`/contests/${contestId}/report`)}
-                            className="flex-1 py-3.5 rounded-xl font-bold bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white hover:shadow-[0_0_25px_rgba(6,182,212,0.3)] transition-all duration-300 text-center text-sm uppercase tracking-wider"
+                            style={{ background: 'linear-gradient(to right, #06b6d4, #8b5cf6)' }}
+                            className="flex-1 py-3.5 rounded-xl font-bold text-white hover:opacity-90 hover:shadow-[0_0_25px_rgba(6,182,212,0.35)] transition-all duration-300 text-center text-sm uppercase tracking-wider shadow-lg"
                         >
                             View & Download Performance Certificate
                         </button>
                     ) : !isRegistered && !isEnded ? (
                         <button
                             onClick={handleRegister}
-                            className="flex-1 py-3.5 rounded-xl font-bold bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white hover:shadow-[0_0_25px_rgba(6,182,212,0.3)] transition-all duration-300 text-center text-sm uppercase tracking-wider"
+                            style={{ background: 'linear-gradient(to right, #06b6d4, #8b5cf6)' }}
+                            className="flex-1 py-3.5 rounded-xl font-bold text-white hover:opacity-90 hover:shadow-[0_0_25px_rgba(6,182,212,0.35)] transition-all duration-300 text-center text-sm uppercase tracking-wider shadow-lg"
                         >
                             Register for Contest
                         </button>
@@ -307,14 +309,16 @@ const ContestDetails = () => {
                         ) : isRunning ? (
                             <button
                                 onClick={() => navigate(`/contest-workspace/${contestId}`)}
-                                className="flex-1 py-3.5 rounded-xl font-bold bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-black hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] transition-all duration-300 text-center text-sm uppercase tracking-wider"
+                                style={{ background: 'linear-gradient(to right, #10b981, #06b6d4)' }}
+                                className="flex-1 py-3.5 rounded-xl font-bold text-black hover:opacity-90 hover:shadow-[0_0_25px_rgba(16,185,129,0.35)] transition-all duration-300 text-center text-sm uppercase tracking-wider shadow-lg"
                             >
                                 Enter Contest
                             </button>
                         ) : (
                             <button
                                 onClick={() => navigate(`/contests/${contestId}/report`)}
-                                className="flex-1 py-3.5 rounded-xl font-bold bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white hover:shadow-[0_0_25px_rgba(6,182,212,0.3)] transition-all duration-300 text-center text-sm uppercase tracking-wider"
+                                style={{ background: 'linear-gradient(to right, #06b6d4, #8b5cf6)' }}
+                                className="flex-1 py-3.5 rounded-xl font-bold text-white hover:opacity-90 hover:shadow-[0_0_25px_rgba(6,182,212,0.35)] transition-all duration-300 text-center text-sm uppercase tracking-wider shadow-lg"
                             >
                                 View Performance Certificate
                             </button>
