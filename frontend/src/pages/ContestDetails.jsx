@@ -3,19 +3,43 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { apiConnector } from '../services/apiConnector';
 import { contestEndpoints } from '../services/apis';
 import { useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { FaChevronLeft, FaRegCalendarAlt, FaRegClock, FaClipboardList, FaFileSignature, FaShieldAlt } from 'react-icons/fa';
+import { 
+    FaChevronLeft, 
+    FaShieldAlt, 
+    FaCheck, 
+    FaPlus, 
+    FaMinus, 
+    FaCalendarAlt, 
+    FaClock, 
+    FaUsers, 
+    FaCode, 
+    FaAward, 
+    FaCheckCircle 
+} from 'react-icons/fa';
 
 const ContestDetails = () => {
     const { contestId } = useParams();
     const navigate = useNavigate();
     const { token } = useSelector((state) => state.auth);
+    
     const [contest, setContest] = useState(null);
     const [isRegistered, setIsRegistered] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [timeLeft, setTimeLeft] = useState({ label: '', value: '' });
+    const [stats, setStats] = useState({ totalRegistered: 0 });
+
+    const [countdown, setCountdown] = useState({
+        days: '00',
+        hours: '00',
+        minutes: '00',
+        seconds: '00',
+        label: 'Starts in',
+        active: false
+    });
+
+    const [openAccordion, setOpenAccordion] = useState(null);
 
     const fetchContestDetails = async () => {
         setLoading(true);
@@ -30,6 +54,16 @@ const ContestDetails = () => {
                 setContest(response.data.data);
                 setIsRegistered(response.data.isRegistered);
                 setIsCompleted(response.data.isCompleted || false);
+                
+                // Fetch registered count from leaderboard API helper
+                try {
+                    const lbRes = await apiConnector("GET", `${contestEndpoints.GET_LEADERBOARD_API}${contestId}/leaderboard`);
+                    if (lbRes?.data?.success) {
+                        setStats({ totalRegistered: lbRes.data.totalRegistered || 0 });
+                    }
+                } catch (err) {
+                    console.error("Failed to load registration counts:", err);
+                }
             }
         } catch (error) {
             console.error("Fetch Contest Details Error:", error);
@@ -79,29 +113,20 @@ const ContestDetails = () => {
 
             if (now < start) {
                 const distance = start - now;
-                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                setTimeLeft({
-                    label: 'CONTEST BEGINS IN',
-                    value: `${days}d ${hours}h ${minutes}m ${seconds}s`
-                });
+                const days = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
+                const hours = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+                const minutes = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                const seconds = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+                setCountdown({ days, hours, minutes, seconds, label: 'CONTEST BEGINS IN', active: false });
             } else if (now >= start && now <= end) {
                 const distance = end - now;
-                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                setTimeLeft({
-                    label: 'CONTEST IS ACTIVE! ENDS IN',
-                    value: `${days}d ${hours}h ${minutes}m ${seconds}s`
-                });
+                const days = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
+                const hours = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+                const minutes = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                const seconds = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+                setCountdown({ days, hours, minutes, seconds, label: 'CONTEST ACTIVE • ENDS IN', active: true });
             } else {
-                setTimeLeft({
-                    label: 'STATUS',
-                    value: 'Contest Has Ended'
-                });
+                setCountdown({ days: '00', hours: '00', minutes: '00', seconds: '00', label: 'CONTEST ENDED', active: false });
                 clearInterval(timer);
             }
         }, 1000);
@@ -109,210 +134,380 @@ const ContestDetails = () => {
         return () => clearInterval(timer);
     }, [contest]);
 
+    const toggleAccordion = (index) => {
+        setOpenAccordion(openAccordion === index ? null : index);
+    };
+
     if (loading) {
         return (
-            <div className="min-h-[60vh] flex flex-col justify-center items-center text-richblack-300 gap-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-50"></div>
-                <p>Loading Arena parameters...</p>
+            <div className="min-h-screen bg-[#030712] flex flex-col justify-center items-center text-richblack-400 gap-4">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-cyan-400"></div>
+                <p className="font-mono text-xs tracking-wider">RESOLVING CONTEST PARAMETERS...</p>
             </div>
         );
     }
 
     if (!contest) {
-        return <div className="text-white text-center mt-20">Contest parameters not found in database</div>;
+        return (
+            <div className="min-h-screen bg-[#030712] flex items-center justify-center text-white font-mono text-sm">
+                CONTEST NOT FOUND IN REGISTER
+            </div>
+        );
     }
 
     const isRunning = contest.status === 'Running';
     const isUpcoming = contest.status === 'Upcoming';
     const isEnded = contest.status === 'Ended';
 
+    // Accordion rules content definition
+    const accordionData = [
+        {
+            title: "Allowed Languages",
+            content: "JavaScript, Python, C++, Java, and Go are supported in the live workspace. Code compilation happens dynamically on the secure compiler environment."
+        },
+        {
+            title: "Submission Limits",
+            content: "Each participant is permitted up to 3 submission attempts per question to avoid brute-forcing solutions. Only the highest-scored choice is accounted for rankings."
+        },
+        {
+            title: "Scoring System",
+            content: "Scores are computed dynamically based on the accuracy of answers (1 point per correct answer/test-case pass). Ties are resolved automatically using solve-completion times."
+        },
+        {
+            title: "Contest Rules",
+            content: "Calculators and local notes are permitted. Plagiarism, sharing code snippets, or accessing external websites during the active assessment is strictly prohibited."
+        }
+    ];
+
     return (
-        <div className="w-11/12 max-w-4xl mx-auto text-white mt-24 mb-20 p-4 min-h-[calc(100vh-8rem)]">
-            {/* Back to Contests link */}
-            <button 
-                onClick={() => navigate('/contests')}
-                className="flex items-center gap-2 text-richblack-400 hover:text-yellow-50 font-semibold mb-6 transition-colors duration-200"
-            >
-                <FaChevronLeft size={12} /> Back to Arena list
-            </button>
+        <div className="min-h-screen bg-[#030712] font-sans antialiased text-white selection:bg-cyan-500/30 selection:text-cyan-200">
+            
+            <div className="w-11/12 max-w-4xl mx-auto pt-28 pb-24">
+                
+                {/* Back Link */}
+                <button 
+                    onClick={() => navigate('/contests')}
+                    className="group flex items-center gap-2 text-xs font-mono tracking-wider text-richblack-400 hover:text-white mb-8 transition-colors duration-200"
+                >
+                    <FaChevronLeft size={10} className="group-hover:-translate-x-0.5 transition-transform duration-200" /> 
+                    BACK TO ARENA LIST
+                </button>
 
-            <motion.div 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="relative flex flex-col gap-8 py-4"
-            >
-
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-richblack-800">
-                    <div>
-                        <span className="bg-[#b58900]/10 border border-[#b58900]/40 text-yellow-100 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider font-mono">
+                {/* Hero Section */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="flex flex-col gap-4 mb-8"
+                >
+                    {/* Contest Badge / Status Tag */}
+                    <div className="flex items-center gap-3">
+                        {isRunning ? (
+                            <span className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono tracking-widest font-bold uppercase px-3 py-1 rounded-full">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                </span>
+                                Live Now
+                            </span>
+                        ) : isUpcoming ? (
+                            <span className="bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-mono tracking-widest font-bold uppercase px-3 py-1 rounded-full">
+                                Upcoming
+                            </span>
+                        ) : (
+                            <span className="bg-richblack-800 border border-richblack-700 text-richblack-400 text-[10px] font-mono tracking-widest font-bold uppercase px-3 py-1 rounded-full">
+                                Ended
+                            </span>
+                        )}
+                        <span className="text-[10px] text-richblack-400 font-mono uppercase tracking-widest bg-white/[0.04] border border-white/[0.08] px-2.5 py-1 rounded-full">
                             {contest.type}
                         </span>
-                        <h1 className="text-3xl md:text-4xl font-extrabold text-richblack-5 mt-3">{contest.title}</h1>
-                        <p className="text-richblack-300 text-base md:text-lg mt-2 leading-relaxed">{contest.description}</p>
                     </div>
-                </div>
 
-                {/* Countdown Timer Display Card */}
-                <div className="relative overflow-hidden bg-gradient-to-r from-richblack-900 to-richblack-950 p-6 rounded-2xl border border-richblack-800 shadow-inner flex flex-col items-center justify-center text-center gap-1.5">
-                    <span className="text-[10px] md:text-xs font-bold tracking-widest text-[#12D8FA] uppercase font-mono">
-                        {timeLeft.label}
+                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                        {contest.title}
+                    </h1>
+                    <p className="text-base text-richblack-300 max-w-2xl leading-relaxed">
+                        {contest.description || "Solve algorithmic problems and compete against participants worldwide."}
+                    </p>
+                </motion.div>
+
+                {/* Primary Focal Countdown Timer */}
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4, delay: 0.1 }}
+                    className="bg-[#0B1220] border border-white/[0.08] rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center shadow-[0_4px_30px_rgba(0,0,0,0.4)] mb-8"
+                >
+                    <span className="text-[10px] font-bold tracking-[0.2em] text-[#06b6d4] uppercase font-mono mb-4">
+                        {countdown.label}
                     </span>
-                    <h2 className="text-2xl md:text-3xl font-extrabold tracking-wider font-mono text-white select-none drop-shadow-[0_0_12px_rgba(18,216,250,0.2)]">
-                        {timeLeft.value}
-                    </h2>
-                </div>
 
-                {/* Info Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono">
-                    <div className="bg-richblack-900/60 p-4 rounded-xl border border-richblack-800 flex items-center gap-4">
-                        <div className="p-3 rounded-lg bg-blue-900/20 text-[#12D8FA]">
-                            <FaRegCalendarAlt size={20} />
+                    {/* Segmented Digit Countdown Grid */}
+                    <div className="flex items-center gap-2 md:gap-4 font-mono select-none">
+                        <div className="flex flex-col items-center">
+                            <div className={`text-4xl md:text-5xl font-extrabold bg-[#030712] border border-white/[0.06] rounded-xl px-4 py-3.5 min-w-[65px] md:min-w-[75px] text-center shadow-[0_0_20px_rgba(6,182,212,0.06)] text-white ${countdown.active ? 'text-cyan-400' : ''}`}>
+                                {countdown.days}
+                            </div>
+                            <span className="text-[9px] text-richblack-500 font-bold uppercase tracking-wider mt-2">Days</span>
                         </div>
-                        <div>
-                            <span className="block text-[10px] text-richblack-400 font-bold uppercase">Start Time</span>
-                            <span className="text-sm font-semibold text-richblack-5">{new Date(contest.startTime).toLocaleString()}</span>
+                        <span className="text-2xl md:text-3xl font-extrabold text-white/30 mb-5">:</span>
+                        <div className="flex flex-col items-center">
+                            <div className={`text-4xl md:text-5xl font-extrabold bg-[#030712] border border-white/[0.06] rounded-xl px-4 py-3.5 min-w-[65px] md:min-w-[75px] text-center shadow-[0_0_20px_rgba(6,182,212,0.06)] text-white ${countdown.active ? 'text-cyan-400' : ''}`}>
+                                {countdown.hours}
+                            </div>
+                            <span className="text-[9px] text-richblack-500 font-bold uppercase tracking-wider mt-2">Hours</span>
+                        </div>
+                        <span className="text-2xl md:text-3xl font-extrabold text-white/30 mb-5">:</span>
+                        <div className="flex flex-col items-center">
+                            <div className={`text-4xl md:text-5xl font-extrabold bg-[#030712] border border-white/[0.06] rounded-xl px-4 py-3.5 min-w-[65px] md:min-w-[75px] text-center shadow-[0_0_20px_rgba(6,182,212,0.06)] text-white ${countdown.active ? 'text-cyan-400' : ''}`}>
+                                {countdown.minutes}
+                            </div>
+                            <span className="text-[9px] text-richblack-500 font-bold uppercase tracking-wider mt-2">Minutes</span>
+                        </div>
+                        <span className="text-2xl md:text-3xl font-extrabold text-white/30 mb-5">:</span>
+                        <div className="flex flex-col items-center">
+                            <div className={`text-4xl md:text-5xl font-extrabold bg-[#030712] border border-white/[0.06] rounded-xl px-4 py-3.5 min-w-[65px] md:min-w-[75px] text-center shadow-[0_0_20px_rgba(6,182,212,0.06)] text-white ${countdown.active ? 'text-cyan-400' : ''}`}>
+                                {countdown.seconds}
+                            </div>
+                            <span className="text-[9px] text-richblack-500 font-bold uppercase tracking-wider mt-2">Seconds</span>
                         </div>
                     </div>
-                    <div className="bg-richblack-900/60 p-4 rounded-xl border border-richblack-800 flex items-center gap-4">
-                        <div className="p-3 rounded-lg bg-pink-900/20 text-pink-300">
-                            <FaRegCalendarAlt size={20} />
-                        </div>
-                        <div>
-                            <span className="block text-[10px] text-richblack-400 font-bold uppercase">End Time</span>
-                            <span className="text-sm font-semibold text-richblack-5">{new Date(contest.endTime).toLocaleString()}</span>
-                        </div>
-                    </div>
-                    <div className="bg-richblack-900/60 p-4 rounded-xl border border-richblack-800 flex items-center gap-4">
-                        <div className="p-3 rounded-lg bg-yellow-900/20 text-yellow-100">
-                            <FaRegClock size={20} />
-                        </div>
-                        <div>
-                            <span className="block text-[10px] text-richblack-400 font-bold uppercase">Duration</span>
-                            <span className="text-sm font-semibold text-richblack-5">{contest.duration} Minutes</span>
-                        </div>
-                    </div>
-                </div>
+                </motion.div>
 
-                {/* Rules Details Section */}
-                {contest.rules && (
-                    <div className="bg-richblack-900/30 p-6 rounded-2xl border border-richblack-800/80">
-                        <div className="flex items-center gap-2 mb-4 text-richblack-100 font-bold text-lg border-b border-richblack-800 pb-2">
-                            <FaClipboardList className="text-[#A6FFCB]" />
-                            <span>Rules & Regulations</span>
-                        </div>
-                        <p className="text-richblack-300 text-sm leading-relaxed whitespace-pre-line font-sans font-medium">
-                            {contest.rules}
-                        </p>
-                    </div>
-                )}
-
-                {/* Anti-cheat Notice Badge */}
-                <div className="flex items-start gap-3 bg-red-950/20 border border-red-900/40 p-4 rounded-xl text-xs text-red-300">
-                    <FaShieldAlt className="mt-0.5 text-red-400 shrink-0" size={16} />
-                    <div>
-                        <span className="font-bold block uppercase tracking-wider mb-0.5">Axiora Guard Active</span>
-                        This contest implements window focus tracking, submission anti-cheat protocols, and tab change monitoring. Attempting to switch tabs or minimize the workspace will trigger a warning.
-                    </div>
-                </div>
-
-                {/* Action Trigger Button */}
-                <div className="pt-4 mt-2">
+                {/* Primary & Secondary Action CTAs */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.15 }}
+                    className="flex flex-col sm:flex-row gap-3 mb-8 w-full"
+                >
                     {isCompleted ? (
-                        <div className="flex flex-col gap-4">
-                            <button
-                                onClick={() => navigate(`/contests/${contestId}/report`)}
-                                className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 text-black hover:shadow-[0_4px_20px_rgba(255,214,10,0.25)] transition-all duration-300 text-center text-base"
-                            >
-                                View & Download Performance Certificate
-                            </button>
-                            <button
-                                onClick={() => navigate(`/contests/${contestId}/leaderboard`)}
-                                className="w-full py-4 rounded-xl font-bold bg-[#1C1D24] text-[#12D8FA] hover:text-white border border-[#12D8FA]/30 hover:border-[#12D8FA] transition-all duration-300 text-center text-base"
-                            >
-                                View Leaderboard & Standings
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => navigate(`/contests/${contestId}/report`)}
+                            className="flex-1 py-3.5 rounded-xl font-bold bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white hover:shadow-[0_0_25px_rgba(6,182,212,0.3)] transition-all duration-300 text-center text-sm uppercase tracking-wider"
+                        >
+                            View & Download Performance Certificate
+                        </button>
                     ) : !isRegistered && !isEnded ? (
-                        <div className="flex flex-col gap-4">
-                            <button
-                                onClick={handleRegister}
-                                className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 text-black hover:shadow-[0_4px_20px_rgba(255,214,10,0.25)] transition-all duration-300 text-center text-base"
-                            >
-                                Register for Contest
-                            </button>
-                            <button
-                                onClick={() => navigate(`/contests/${contestId}/leaderboard`)}
-                                className="w-full py-4 rounded-xl font-bold bg-[#1C1D24] text-[#12D8FA] hover:text-white border border-[#12D8FA]/30 hover:border-[#12D8FA] transition-all duration-300 text-center text-base"
-                            >
-                                View Leaderboard & Standings
-                            </button>
-                        </div>
+                        <button
+                            onClick={handleRegister}
+                            className="flex-1 py-3.5 rounded-xl font-bold bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white hover:shadow-[0_0_25px_rgba(6,182,212,0.3)] transition-all duration-300 text-center text-sm uppercase tracking-wider"
+                        >
+                            Register for Contest
+                        </button>
                     ) : isRegistered ? (
                         isUpcoming ? (
-                            <div className="flex flex-col gap-4">
-                                <button
-                                    disabled
-                                    className="w-full py-4 rounded-xl font-bold bg-richblack-800 text-richblack-500 border border-richblack-700 cursor-not-allowed text-center text-base"
-                                >
-                                    Registered (Waiting for Contest start)
-                                </button>
-                                <button
-                                    onClick={() => navigate(`/contests/${contestId}/leaderboard`)}
-                                    className="w-full py-4 rounded-xl font-bold bg-[#1C1D24] text-[#12D8FA] hover:text-white border border-[#12D8FA]/30 hover:border-[#12D8FA] transition-all duration-300 text-center text-base"
-                                >
-                                    View Leaderboard & Standings
-                                </button>
-                            </div>
-                        ) : isRunning ? (
-                            <div className="flex flex-col gap-4">
-                                <button
-                                    onClick={() => navigate(`/contest-workspace/${contestId}`)}
-                                    className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-caribbeangreen-400 to-caribbeangreen-500 hover:from-caribbeangreen-300 hover:to-caribbeangreen-400 text-black hover:shadow-[0_4px_20px_rgba(1,248,155,0.25)] transition-all duration-300 text-center text-base"
-                                >
-                                    Enter Contest Workspace
-                                </button>
-                                <button
-                                    onClick={() => navigate(`/contests/${contestId}/leaderboard`)}
-                                    className="w-full py-4 rounded-xl font-bold bg-[#1C1D24] text-[#12D8FA] hover:text-white border border-[#12D8FA]/30 hover:border-[#12D8FA] transition-all duration-300 text-center text-base"
-                                >
-                                    View Leaderboard & Standings
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col gap-4">
-                                <button
-                                    onClick={() => navigate(`/contests/${contestId}/report`)}
-                                    className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 text-black hover:shadow-[0_4px_20px_rgba(255,214,10,0.25)] transition-all duration-300 text-center text-base"
-                                >
-                                    View & Download Performance Certificate
-                                </button>
-                                <button
-                                    onClick={() => navigate(`/contests/${contestId}/leaderboard`)}
-                                    className="w-full py-4 rounded-xl font-bold bg-[#1C1D24] text-[#12D8FA] hover:text-white border border-[#12D8FA]/30 hover:border-[#12D8FA] transition-all duration-300 text-center text-base"
-                                >
-                                    View Leaderboard & Standings
-                                </button>
-                            </div>
-                        )
-                    ) : (
-                        <div className="flex flex-col gap-4">
                             <button
                                 disabled
-                                className="w-full py-4 rounded-xl font-bold bg-richblack-800 text-richblack-500 border border-richblack-700 cursor-not-allowed text-center text-base"
+                                className="flex-1 py-3.5 rounded-xl font-bold bg-richblack-800 text-richblack-500 border border-white/[0.04] cursor-not-allowed text-center text-sm uppercase tracking-wider"
                             >
-                                Contest Closed
+                                Registered (Waiting to Start)
                             </button>
+                        ) : isRunning ? (
                             <button
-                                onClick={() => navigate(`/contests/${contestId}/leaderboard`)}
-                                className="w-full py-4 rounded-xl font-bold bg-[#1C1D24] text-[#12D8FA] hover:text-white border border-[#12D8FA]/30 hover:border-[#12D8FA] transition-all duration-300 text-center text-base"
+                                onClick={() => navigate(`/contest-workspace/${contestId}`)}
+                                className="flex-1 py-3.5 rounded-xl font-bold bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-black hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] transition-all duration-300 text-center text-sm uppercase tracking-wider"
                             >
-                                View Leaderboard & Standings
+                                Enter Contest
                             </button>
-                        </div>
+                        ) : (
+                            <button
+                                onClick={() => navigate(`/contests/${contestId}/report`)}
+                                className="flex-1 py-3.5 rounded-xl font-bold bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white hover:shadow-[0_0_25px_rgba(6,182,212,0.3)] transition-all duration-300 text-center text-sm uppercase tracking-wider"
+                            >
+                                View Performance Certificate
+                            </button>
+                        )
+                    ) : (
+                        <button
+                            disabled
+                            className="flex-1 py-3.5 rounded-xl font-bold bg-richblack-800 text-richblack-500 border border-white/[0.04] cursor-not-allowed text-center text-sm uppercase tracking-wider"
+                        >
+                            Contest Closed
+                        </button>
                     )}
-                </div>
-            </motion.div>
+
+                    {/* Secondary Leaderboard CTA */}
+                    <button
+                        onClick={() => navigate(`/contests/${contestId}/leaderboard`)}
+                        className="py-3.5 px-8 rounded-xl font-bold bg-transparent text-richblack-200 hover:text-white border border-white/10 hover:border-white/30 transition-all duration-300 text-center text-sm font-mono tracking-wider uppercase"
+                    >
+                        View Leaderboard
+                    </button>
+                </motion.div>
+
+                {/* Contest Meta Grid */}
+                <motion.div 
+                    initial="hidden"
+                    animate="show"
+                    variants={{
+                        hidden: { opacity: 0 },
+                        show: {
+                            opacity: 1,
+                            transition: { staggerChildren: 0.05, delayChildren: 0.2 }
+                        }
+                    }}
+                    className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-8"
+                >
+                    {/* Start Time */}
+                    <motion.div 
+                        variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}
+                        className="bg-[#0B1220] border border-white/[0.08] p-4 rounded-xl flex flex-col gap-1.5"
+                    >
+                        <div className="flex items-center gap-1.5 text-cyan-400">
+                            <FaCalendarAlt size={11} />
+                            <span className="text-[9px] font-bold tracking-wider uppercase text-richblack-400">Start Time</span>
+                        </div>
+                        <span className="text-[11px] font-medium leading-normal text-white">{new Date(contest.startTime).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'})}</span>
+                    </motion.div>
+
+                    {/* End Time */}
+                    <motion.div 
+                        variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}
+                        className="bg-[#0B1220] border border-white/[0.08] p-4 rounded-xl flex flex-col gap-1.5"
+                    >
+                        <div className="flex items-center gap-1.5 text-violet-400">
+                            <FaCalendarAlt size={11} />
+                            <span className="text-[9px] font-bold tracking-wider uppercase text-richblack-400">End Time</span>
+                        </div>
+                        <span className="text-[11px] font-medium leading-normal text-white">{new Date(contest.endTime).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'})}</span>
+                    </motion.div>
+
+                    {/* Duration */}
+                    <motion.div 
+                        variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}
+                        className="bg-[#0B1220] border border-white/[0.08] p-4 rounded-xl flex flex-col gap-1.5"
+                    >
+                        <div className="flex items-center gap-1.5 text-yellow-50">
+                            <FaClock size={11} />
+                            <span className="text-[9px] font-bold tracking-wider uppercase text-richblack-400">Duration</span>
+                        </div>
+                        <span className="text-xs font-bold leading-normal text-white">{contest.duration} Min</span>
+                    </motion.div>
+
+                    {/* Participants */}
+                    <motion.div 
+                        variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}
+                        className="bg-[#0B1220] border border-white/[0.08] p-4 rounded-xl flex flex-col gap-1.5"
+                    >
+                        <div className="flex items-center gap-1.5 text-emerald-400">
+                            <FaUsers size={11} />
+                            <span className="text-[9px] font-bold tracking-wider uppercase text-richblack-400">Participants</span>
+                        </div>
+                        <span className="text-xs font-bold leading-normal text-white">{stats.totalRegistered} Active</span>
+                    </motion.div>
+
+                    {/* Problems Count */}
+                    <motion.div 
+                        variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}
+                        className="bg-[#0B1220] border border-white/[0.08] p-4 rounded-xl flex flex-col gap-1.5"
+                    >
+                        <div className="flex items-center gap-1.5 text-cyan-400">
+                            <FaCode size={11} />
+                            <span className="text-[9px] font-bold tracking-wider uppercase text-richblack-400">Problems</span>
+                        </div>
+                        <span className="text-xs font-bold leading-normal text-white">{contest.problems?.length || 0} Task{contest.problems?.length === 1 ? '' : 's'}</span>
+                    </motion.div>
+
+                    {/* Prize Pool */}
+                    <motion.div 
+                        variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}
+                        className="bg-[#0B1220] border border-white/[0.08] p-4 rounded-xl flex flex-col gap-1.5"
+                    >
+                        <div className="flex items-center gap-1.5 text-[#e5c158]">
+                            <FaAward size={11} />
+                            <span className="text-[9px] font-bold tracking-wider uppercase text-richblack-400">Prize Pool</span>
+                        </div>
+                        <span className="text-xs font-bold leading-normal text-[#e5c158]">Badges & XP</span>
+                    </motion.div>
+                </motion.div>
+
+                {/* Rules Section (Collapsible Accordion) */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.25 }}
+                    className="bg-[#0B1220] border border-white/[0.08] rounded-2xl overflow-hidden mb-8"
+                >
+                    <div className="p-5 border-b border-white/[0.06] flex items-center gap-2">
+                        <span className="text-xs font-mono text-cyan-400 font-bold uppercase tracking-wider">Guidelines</span>
+                    </div>
+
+                    <div className="divide-y divide-white/[0.06]">
+                        {accordionData.map((item, idx) => {
+                            const isOpen = openAccordion === idx;
+                            return (
+                                <div key={idx} className="w-full">
+                                    <button
+                                        onClick={() => toggleAccordion(idx)}
+                                        className="w-full p-5 flex items-center justify-between text-left hover:bg-white/[0.01] transition-colors focus:outline-none"
+                                    >
+                                        <span className="text-sm font-semibold text-richblack-100">{item.title}</span>
+                                        {isOpen ? <FaMinus size={10} className="text-cyan-400" /> : <FaPlus size={10} className="text-richblack-500" />}
+                                    </button>
+                                    <AnimatePresence initial={false}>
+                                        {isOpen && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: 'auto', opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.25 }}
+                                                className="overflow-hidden"
+                                            >
+                                                <div className="px-5 pb-5 text-sm text-richblack-300 leading-relaxed font-sans font-medium">
+                                                    {item.content}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </motion.div>
+
+                {/* Anti-Cheat Section (Security Panel Checklist) */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.3 }}
+                    className="bg-[#0B1220] border border-white/[0.08] rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-6"
+                >
+                    <div className="flex items-start gap-4">
+                        <div className="p-3 bg-[#030712] border border-white/[0.08] text-[#FF5A5F] rounded-xl">
+                            <FaShieldAlt size={22} className="animate-pulse" />
+                        </div>
+                        <div>
+                            <span className="block text-xs font-mono font-bold tracking-widest text-[#FF5A5F] uppercase">Protected Environment</span>
+                            <span className="block text-xs text-richblack-400 mt-1 leading-relaxed max-w-md">
+                                Axiora Guard validates secure compilation integrity. Attempting external window changes triggers automated flags.
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Features Checklist */}
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-[11px] font-mono text-richblack-300 border-t md:border-t-0 border-white/[0.06] pt-4 md:pt-0">
+                        <div className="flex items-center gap-2">
+                            <FaCheckCircle className="text-cyan-400" />
+                            <span>Focus Monitoring</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <FaCheckCircle className="text-cyan-400" />
+                            <span>Fullscreen Lock</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <FaCheckCircle className="text-cyan-400" />
+                            <span>Submit Protection</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <FaCheckCircle className="text-cyan-400" />
+                            <span>Session Tracking</span>
+                        </div>
+                    </div>
+                </motion.div>
+
+            </div>
         </div>
     );
 };
