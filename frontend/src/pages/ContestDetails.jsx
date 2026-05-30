@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiConnector } from '../services/apiConnector';
 import { contestEndpoints } from '../services/apis';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../services/operations/authAPI';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { 
@@ -21,9 +22,57 @@ import {
     FaHourglassHalf
 } from 'react-icons/fa';
 
+const MagneticButton = ({ children, onClick, className, disabled }) => {
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+    const [isHovered, setIsHovered] = useState(false);
+    
+    const handleMouseMove = (e) => {
+        const { clientX, clientY, currentTarget } = e;
+        const { left, top, width, height } = currentTarget.getBoundingClientRect();
+        const x = clientX - (left + width / 2);
+        const y = clientY - (top + height / 2);
+        setPosition({ x: x * 0.35, y: y * 0.35 });
+    };
+
+    const handleMouseLeave = () => {
+        setPosition({ x: 0, y: 0 });
+        setIsHovered(false);
+    };
+
+    return (
+        <motion.button
+            onMouseMove={handleMouseMove}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={handleMouseLeave}
+            onClick={onClick}
+            disabled={disabled}
+            animate={{ x: position.x, y: position.y }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+            className={`relative overflow-hidden ${className}`}
+        >
+            {isHovered && (
+                <motion.div
+                    className="absolute pointer-events-none rounded-full bg-white/10 blur-md"
+                    style={{
+                        width: 120,
+                        height: 120,
+                        x: position.x * 2.5 - 60,
+                        y: position.y * 2.5 - 60,
+                        top: '50%',
+                        left: '50%'
+                    }}
+                />
+            )}
+            <span className="relative z-10">{children}</span>
+        </motion.button>
+    );
+};
+
 const ContestDetails = () => {
     const { contestId } = useParams();
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const { token } = useSelector((state) => state.auth);
     
     const [contest, setContest] = useState(null);
@@ -68,7 +117,12 @@ const ContestDetails = () => {
             }
         } catch (error) {
             console.error("Fetch Contest Details Error:", error);
-            toast.error("Failed to load contest details");
+            if (error.response?.status === 401 && token) {
+                toast.error("Session expired. Please login again.");
+                dispatch(logout(navigate));
+            } else {
+                toast.error("Failed to load contest details");
+            }
         }
         setLoading(false);
     };
@@ -95,7 +149,12 @@ const ContestDetails = () => {
             }
         } catch (error) {
             console.error("Registration Error:", error);
-            toast.error(error.response?.data?.message || "Failed to register");
+            if (error.response?.status === 401) {
+                toast.error("Session expired. Please login again.");
+                dispatch(logout(navigate));
+            } else {
+                toast.error(error.response?.data?.message || "Failed to register");
+            }
         }
     };
 
@@ -295,19 +354,19 @@ const ContestDetails = () => {
                         {/* Action Buttons (Join / Leaderboard) */}
                         <div className="flex gap-4">
                             {isCompleted ? (
-                                <button
+                                <MagneticButton
                                     onClick={() => navigate(`/contests/${contestId}/report`)}
                                     className="glow-btn-primary flex-1 py-3.5 rounded-xl font-bold transition-all text-center text-sm uppercase tracking-wider"
                                 >
                                     View Performance Report
-                                </button>
+                                </MagneticButton>
                             ) : !isRegistered && !isEnded ? (
-                                <button
+                                <MagneticButton
                                     onClick={handleRegister}
                                     className="glow-btn-primary flex-1 py-3.5 rounded-xl font-bold transition-all text-center text-sm uppercase tracking-wider"
                                 >
                                     Join Challenge
-                                </button>
+                                </MagneticButton>
                             ) : isRegistered ? (
                                 isUpcoming ? (
                                     <button
@@ -317,19 +376,19 @@ const ContestDetails = () => {
                                         Joined (Waiting for launch)
                                     </button>
                                 ) : isRunning ? (
-                                    <button
+                                    <MagneticButton
                                         onClick={() => navigate(`/contest-workspace/${contestId}`)}
                                         className="glow-btn-primary flex-1 py-3.5 rounded-xl font-bold transition-all text-center text-sm uppercase tracking-wider"
                                     >
                                         Enter Contest Workspace
-                                    </button>
+                                    </MagneticButton>
                                 ) : (
-                                    <button
+                                    <MagneticButton
                                         onClick={() => navigate(`/contests/${contestId}/report`)}
                                         className="glow-btn-primary flex-1 py-3.5 rounded-xl font-bold transition-all text-center text-sm uppercase tracking-wider"
                                     >
                                         View Performance Report
-                                    </button>
+                                    </MagneticButton>
                                 )
                             ) : (
                                 <button
