@@ -219,12 +219,21 @@ exports.getLeaderboard = async (req, res) => {
     try {
         const { contestId } = req.params;
         const Leaderboard = require('../models/Leaderboard');
+        const ContestParticipant = require('../models/ContestParticipant');
         
         const leaderboard = await Leaderboard.find({ contest: contestId })
                                              .populate('user', 'firstName lastName email image')
                                              .sort({ score: -1, updatedAt: 1 });
 
-        return res.status(200).json({ success: true, data: leaderboard });
+        const totalRegistered = await ContestParticipant.countDocuments({ contest: contestId });
+        const totalParticipated = leaderboard.length;
+
+        return res.status(200).json({ 
+            success: true, 
+            data: leaderboard,
+            totalRegistered,
+            totalParticipated
+        });
     } catch (error) {
         console.error("Get Leaderboard Error:", error);
         return res.status(500).json({ success: false, message: 'Failed to fetch leaderboard', error: error.message });
