@@ -219,49 +219,97 @@ const ContestDetails = () => {
                 {/* Action Trigger Button */}
                 <div className="pt-4 mt-2">
                     {isCompleted ? (
-                        <button
-                            onClick={() => navigate(`/contests/${contestId}/report`)}
-                            className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 text-black hover:shadow-[0_4px_20px_rgba(255,214,10,0.25)] transition-all duration-300 text-center text-base"
-                        >
-                            View & Download Performance Certificate
-                        </button>
-                    ) : !isRegistered && !isEnded ? (
-                        <button
-                            onClick={handleRegister}
-                            className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 text-black hover:shadow-[0_4px_20px_rgba(255,214,10,0.25)] transition-all duration-300 text-center text-base"
-                        >
-                            Register for Contest
-                        </button>
-                    ) : isRegistered ? (
-                        isUpcoming ? (
-                            <button
-                                disabled
-                                className="w-full py-4 rounded-xl font-bold bg-richblack-800 text-richblack-500 border border-richblack-700 cursor-not-allowed text-center text-base"
-                            >
-                                Registered (Waiting for Contest start)
-                            </button>
-                        ) : isRunning ? (
-                            <button
-                                onClick={() => navigate(`/contest-workspace/${contestId}`)}
-                                className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-caribbeangreen-400 to-caribbeangreen-500 hover:from-caribbeangreen-300 hover:to-caribbeangreen-400 text-black hover:shadow-[0_4px_20px_rgba(1,248,155,0.25)] transition-all duration-300 text-center text-base"
-                            >
-                                Enter Contest Workspace
-                            </button>
-                        ) : (
+                        <div className="flex flex-col gap-4">
                             <button
                                 onClick={() => navigate(`/contests/${contestId}/report`)}
                                 className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 text-black hover:shadow-[0_4px_20px_rgba(255,214,10,0.25)] transition-all duration-300 text-center text-base"
                             >
                                 View & Download Performance Certificate
                             </button>
+                            <button
+                                onClick={() => navigate(`/contests/${contestId}/leaderboard`)}
+                                className="w-full py-4 rounded-xl font-bold bg-[#1C1D24] text-[#12D8FA] hover:text-white border border-[#12D8FA]/30 hover:border-[#12D8FA] transition-all duration-300 text-center text-base"
+                            >
+                                View Leaderboard & Standings
+                            </button>
+                        </div>
+                    ) : !isRegistered && !isEnded ? (
+                        <div className="flex flex-col gap-4">
+                            <button
+                                onClick={handleRegister}
+                                className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 text-black hover:shadow-[0_4px_20px_rgba(255,214,10,0.25)] transition-all duration-300 text-center text-base"
+                            >
+                                Register for Contest
+                            </button>
+                            <button
+                                onClick={() => navigate(`/contests/${contestId}/leaderboard`)}
+                                className="w-full py-4 rounded-xl font-bold bg-[#1C1D24] text-[#12D8FA] hover:text-white border border-[#12D8FA]/30 hover:border-[#12D8FA] transition-all duration-300 text-center text-base"
+                            >
+                                View Leaderboard & Standings
+                            </button>
+                        </div>
+                    ) : isRegistered ? (
+                        isUpcoming ? (
+                            <div className="flex flex-col gap-4">
+                                <button
+                                    disabled
+                                    className="w-full py-4 rounded-xl font-bold bg-richblack-800 text-richblack-500 border border-richblack-700 cursor-not-allowed text-center text-base"
+                                >
+                                    Registered (Waiting for Contest start)
+                                </button>
+                                <button
+                                    onClick={() => navigate(`/contests/${contestId}/leaderboard`)}
+                                    className="w-full py-4 rounded-xl font-bold bg-[#1C1D24] text-[#12D8FA] hover:text-white border border-[#12D8FA]/30 hover:border-[#12D8FA] transition-all duration-300 text-center text-base"
+                                >
+                                    View Leaderboard & Standings
+                                </button>
+                            </div>
+                        ) : isRunning ? (
+                            <div className="flex flex-col gap-4">
+                                <button
+                                    onClick={() => navigate(`/contest-workspace/${contestId}`)}
+                                    className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-caribbeangreen-400 to-caribbeangreen-500 hover:from-caribbeangreen-300 hover:to-caribbeangreen-400 text-black hover:shadow-[0_4px_20px_rgba(1,248,155,0.25)] transition-all duration-300 text-center text-base"
+                                >
+                                    Enter Contest Workspace
+                                </button>
+                                <button
+                                    onClick={() => navigate(`/contests/${contestId}/leaderboard`)}
+                                    className="w-full py-4 rounded-xl font-bold bg-[#1C1D24] text-[#12D8FA] hover:text-white border border-[#12D8FA]/30 hover:border-[#12D8FA] transition-all duration-300 text-center text-base"
+                                >
+                                    View Leaderboard & Standings
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-4">
+                                <button
+                                    onClick={() => navigate(`/contests/${contestId}/report`)}
+                                    className="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 text-black hover:shadow-[0_4px_20px_rgba(255,214,10,0.25)] transition-all duration-300 text-center text-base"
+                                >
+                                    View & Download Performance Certificate
+                                </button>
+                                <button
+                                    onClick={() => navigate(`/contests/${contestId}/leaderboard`)}
+                                    className="w-full py-4 rounded-xl font-bold bg-[#1C1D24] text-[#12D8FA] hover:text-white border border-[#12D8FA]/30 hover:border-[#12D8FA] transition-all duration-300 text-center text-base"
+                                >
+                                    View Leaderboard & Standings
+                                </button>
+                            </div>
                         )
                     ) : (
-                        <button
-                            disabled
-                            className="w-full py-4 rounded-xl font-bold bg-richblack-800 text-richblack-500 border border-richblack-700 cursor-not-allowed text-center text-base"
-                        >
-                            Contest Closed
-                        </button>
+                        <div className="flex flex-col gap-4">
+                            <button
+                                disabled
+                                className="w-full py-4 rounded-xl font-bold bg-richblack-800 text-richblack-500 border border-richblack-700 cursor-not-allowed text-center text-base"
+                            >
+                                Contest Closed
+                            </button>
+                            <button
+                                onClick={() => navigate(`/contests/${contestId}/leaderboard`)}
+                                className="w-full py-4 rounded-xl font-bold bg-[#1C1D24] text-[#12D8FA] hover:text-white border border-[#12D8FA]/30 hover:border-[#12D8FA] transition-all duration-300 text-center text-base"
+                            >
+                                View Leaderboard & Standings
+                            </button>
+                        </div>
                     )}
                 </div>
             </motion.div>

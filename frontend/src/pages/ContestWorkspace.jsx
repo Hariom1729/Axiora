@@ -285,34 +285,67 @@ const ContestWorkspace = () => {
                                         )}
                                     </div>
                                 ) : (
-                                    // MCQ Option Panel
+                                    // MCQ Option Panel (Refactored to mirror reference design)
                                     <div className="space-y-6">
-                                        <p className="text-base text-richblack-100 bg-richblack-900 p-4 rounded-xl border border-richblack-800 whitespace-pre-wrap">
-                                            {activeProblem.statement || activeProblem.title}
-                                        </p>
-                                        <div className="space-y-3">
-                                            {activeProblem.options?.map((opt, i) => (
-                                                <label 
-                                                    key={i} 
-                                                    className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer hover:bg-richblack-900/60 transition-all ${mcqAnswer === opt ? 'border-yellow-50 bg-richblack-900 shadow-glass' : 'border-richblack-800 bg-richblack-900/20'}`}
-                                                >
-                                                    <input
-                                                        type="radio"
-                                                        name="mcq"
-                                                        value={opt}
-                                                        checked={mcqAnswer === opt}
-                                                        onChange={(e) => setMcqAnswer(e.target.value)}
-                                                        className="w-4 h-4 accent-yellow-50 cursor-pointer"
-                                                    />
-                                                    <span className="text-sm font-semibold text-richblack-300">{String.fromCharCode(65 + i)}.</span>
-                                                    <span className="text-sm font-medium">{opt}</span>
-                                                </label>
-                                            ))}
+                                        {/* Type Header Tag */}
+                                        <div className="flex items-center justify-between">
+                                            <span className="flex items-center gap-1.5 bg-[#1C1D24] border border-richblack-800 text-richblack-300 px-3.5 py-1.5 rounded-lg text-xs font-semibold select-none">
+                                                <VscSymbolMethod className="text-yellow-50" /> Multiple choice
+                                            </span>
+                                            <span className="text-[10px] text-richblack-500 font-bold uppercase tracking-widest font-mono">Question {selectedProblemIndex + 1} of {problems.length}</span>
                                         </div>
+
+                                        {/* Statement Card */}
+                                        <div className="bg-[#1C1D24] p-6 rounded-2xl border border-richblack-800 text-white text-base md:text-lg font-bold leading-relaxed whitespace-pre-wrap">
+                                            {activeProblem.statement || activeProblem.title}
+                                        </div>
+
+                                        {/* Choice List Container */}
+                                        <div className="space-y-3">
+                                            <span className="block text-[10px] text-richblack-400 font-bold uppercase tracking-wider font-mono">Choices *</span>
+                                            {activeProblem.options?.map((opt, i) => {
+                                                const isSelected = mcqAnswer === opt;
+                                                return (
+                                                    <label 
+                                                        key={i} 
+                                                        className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer hover:bg-[#262833]/60 transition-all duration-200 group ${isSelected ? 'border-[#12D8FA] bg-[#1C1D24] shadow-[0_0_15px_rgba(18,216,250,0.08)]' : 'border-richblack-800 bg-[#1C1D24]/40'}`}
+                                                    >
+                                                        <div className="flex items-center gap-4">
+                                                            {/* Custom Styled Circle */}
+                                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-[#12D8FA] bg-[#12D8FA]' : 'border-richblack-600 bg-transparent group-hover:border-richblack-400'}`}>
+                                                                {isSelected && <VscCheck className="text-black font-extrabold" size={12} />}
+                                                            </div>
+                                                            <span className="text-sm font-medium text-white select-none">{opt}</span>
+                                                        </div>
+                                                        <input
+                                                            type="radio"
+                                                            name="mcq"
+                                                            value={opt}
+                                                            checked={isSelected}
+                                                            onChange={(e) => setMcqAnswer(e.target.value)}
+                                                            className="hidden"
+                                                        />
+                                                    </label>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {/* Mark as points Card */}
+                                        <div className="grid grid-cols-2 gap-4 mt-6">
+                                            <div className="flex justify-between items-center bg-[#1C1D24] p-4 rounded-xl border border-richblack-800 text-xs font-semibold text-richblack-400">
+                                                <span>Estimation time</span>
+                                                <span className="font-mono text-white bg-richblack-850 px-2.5 py-1 rounded-md">2 Mins</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-[#1C1D24] p-4 rounded-xl border border-richblack-800 text-xs font-semibold text-richblack-400">
+                                                <span>Mark as point</span>
+                                                <span className="bg-[#12D8FA]/10 border border-[#12D8FA]/20 text-[#12D8FA] px-2.5 py-1 rounded-md font-bold font-mono">1 Points</span>
+                                            </div>
+                                        </div>
+
                                         <button
                                             onClick={handleSubmitMcq}
                                             disabled={submitting}
-                                            className="w-full bg-yellow-50 text-black font-bold py-3 rounded-xl hover:bg-yellow-100 transition-all text-sm uppercase tracking-wider"
+                                            className="w-full bg-yellow-50 text-black font-bold py-3.5 rounded-xl hover:bg-yellow-100 transition-all text-sm uppercase tracking-wider mt-4"
                                         >
                                             {submitting ? 'Submitting Choice...' : 'Submit Choice'}
                                         </button>
