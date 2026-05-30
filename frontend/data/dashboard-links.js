@@ -29,6 +29,20 @@ export const sidebarLinks = [
     icon: "VscAdd",
   },
   {
+    id: 10,
+    name: "My Contests",
+    path: "/dashboard/my-contests",
+    type: ACCOUNT_TYPE.INSTRUCTOR,
+    icon: "VscBriefcase",
+  },
+  {
+    id: 11,
+    name: "Add Contest",
+    path: "/dashboard/add-contest",
+    type: ACCOUNT_TYPE.INSTRUCTOR,
+    icon: "VscNewFile",
+  },
+  {
     id: 5,
     name: "Enrolled Courses",
     path: "/dashboard/enrolled-courses",

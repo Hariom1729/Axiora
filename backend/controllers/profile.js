@@ -16,20 +16,34 @@ exports.updateProfile = async (req, res) => {
         const { gender = '', dateOfBirth = "", about = "", contactNumber = '', firstName, lastName } = req.body;
 
         // extract userId
-        const userId = req.user.id;
-
+        const userId = req.user._id;
 
         // find profile
         const userDetails = await User.findById(userId);
-        const profileId = userDetails.additionalDetails;
-        const profileDetails = await Profile.findById(profileId);
+        if (!userDetails) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
 
-        // console.log('User profileDetails -> ', profileDetails);
+        const profileId = userDetails.additionalDetails;
+        let profileDetails;
+        if (profileId) {
+            profileDetails = await Profile.findById(profileId);
+        }
+
+        if (!profileDetails) {
+            profileDetails = await Profile.create({
+                gender: null,
+                dateOfBirth: null,
+                about: null,
+                contactNumber: null,
+            });
+            userDetails.additionalDetails = profileDetails._id;
+        }
 
         // Update the profile fields
         userDetails.firstName = firstName;
         userDetails.lastName = lastName;
-        await userDetails.save()
+        await userDetails.save();
 
         profileDetails.gender = gender;
         profileDetails.dateOfBirth = dateOfBirth;

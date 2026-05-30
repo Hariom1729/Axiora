@@ -68,6 +68,12 @@ const userSchema = new mongoose.Schema(
         lastLogin: {
             type: Date,
         },
+        xp: { type: Number, default: 0 },
+        rating: { type: Number, default: 1500 },
+        badges: [{ type: String }],
+        streak: { type: Number, default: 0 },
+        solvedProblems: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Problem' }],
+        organizations: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Organization' }],
     },// Add timestamps for when the document is created and last modified
     { timestamps: true }
 );

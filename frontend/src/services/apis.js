@@ -61,6 +61,25 @@ export const contactusEndpoint = {
   CONTACT_US_API: BASE_URL + "/reach/contact",
 }
 
+// CONTEST ENDPOINTS
+export const contestEndpoints = {
+  GET_ALL_CONTESTS_API: BASE_URL + "/contest/all",
+  GET_CONTEST_DETAILS_API: BASE_URL + "/contest/", // append id
+  CREATE_CONTEST_API: BASE_URL + "/contest/create",
+  DELETE_CONTEST_API: BASE_URL + "/contest/", // append id
+  REGISTER_CONTEST_API: BASE_URL + "/contest/register/", // append id
+  GET_LEADERBOARD_API: BASE_URL + "/contest/", // append id/leaderboard
+  GET_REPORT_API: BASE_URL + "/contest/", // append id/report
+  COMPLETE_CONTEST_API: BASE_URL + "/contest/", // append id/complete
+}
+
+// PROBLEM ENDPOINTS
+export const problemEndpoints = {
+  CREATE_PROBLEM_API: BASE_URL + "/problem/create",
+  GET_CONTEST_PROBLEMS_API: BASE_URL + "/problem/contest/", // append contestId
+  DELETE_PROBLEM_API: BASE_URL + "/problem/", // append problemId/contest/contestId
+}
+
 // SETTINGS PAGE API
 export const settingsEndpoints = {
   UPDATE_DISPLAY_PICTURE_API: BASE_URL + "/profile/updateUserProfileImage",

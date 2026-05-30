@@ -22,6 +22,11 @@ import Contact from "./pages/Contact";
 import PageNotFound from "./pages/PageNotFound";
 import CourseDetails from './pages/CourseDetails';
 import Catalog from './pages/Catalog';
+import Contests from './pages/Contests';
+import ContestDetails from './pages/ContestDetails';
+import ContestWorkspace from './pages/ContestWorkspace';
+import ContestLeaderboard from './pages/ContestLeaderboard';
+import ContestReport from './pages/ContestReport';
  
 import Navbar from "./components/common/Navbar"
 
@@ -34,6 +39,9 @@ import Settings from "./components/core/Dashboard/Settings/Settings";
 import MyCourses from './components/core/Dashboard/MyCourses';
 import EditCourse from './components/core/Dashboard/EditCourse/EditCourse';
 import Instructor from './components/core/Dashboard/Instructor';
+import AddContest from './components/core/Dashboard/AddContest/AddContest';
+import MyContests from './components/core/Dashboard/MyContests/MyContests';
+import AddProblem from './components/core/Dashboard/AddProblem/AddProblem';
 
 
 import Cart from "./components/core/Dashboard/Cart/Cart";
@@ -128,9 +136,11 @@ function App() {
   }, [showArrow])
 
 
+  const isWorkspace = location.pathname.startsWith('/contest-workspace');
+
   return (
     <div className="w-screen min-h-screen bg-richblack-900 flex flex-col font-inter">
-      <Navbar />
+      {!isWorkspace && <Navbar />}
 
       {/* go upward arrow */}
       <button onClick={() => window.scrollTo(0, 0)}
@@ -145,6 +155,11 @@ function App() {
           <Route path="/about" element={<PageTransition><About /></PageTransition>} />
           <Route path="catalog/:catalogName" element={<PageTransition><Catalog /></PageTransition>} />
           <Route path="courses/:courseId" element={<PageTransition><CourseDetails /></PageTransition>} />
+          <Route path="contests" element={<PageTransition><Contests /></PageTransition>} />
+          <Route path="contests/:contestId" element={<PageTransition><ContestDetails /></PageTransition>} />
+          <Route path="contest-workspace/:contestId" element={<PageTransition><ContestWorkspace /></PageTransition>} />
+          <Route path="contests/:contestId/leaderboard" element={<PageTransition><ContestLeaderboard /></PageTransition>} />
+          <Route path="contests/:contestId/report" element={<PageTransition><ContestReport /></PageTransition>} />
 
           <Route
             path="signup" element={
@@ -209,6 +224,9 @@ function App() {
                 <Route path="dashboard/add-course" element={<AddCourse />} />
                 <Route path="dashboard/my-courses" element={<MyCourses />} />
                 <Route path="dashboard/edit-course/:courseId" element={<EditCourse />} />
+                <Route path="dashboard/add-contest" element={<AddContest />} />
+                <Route path="dashboard/my-contests" element={<MyContests />} />
+                <Route path="dashboard/my-contests/:contestId/add-problem" element={<AddProblem />} />
               </>
             )}
           </Route>

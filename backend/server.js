@@ -6,12 +6,15 @@ if (!buffer.SlowBuffer) {
 
 const express = require('express')
 const app = express();
+const http = require('http');
 
 // packages
 const fileUpload = require('express-fileupload');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 require('dotenv').config();
+
+const { initializeSocket } = require('./utils/socketHandler');
 
 // connection to DB and cloudinary
 const { connectDB } = require('./config/database');
@@ -58,7 +61,10 @@ app.use(
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+initializeSocket(server);
+
+server.listen(PORT, () => {
     console.log(`Server Started on PORT ${PORT}`);
     const rzpKey = process.env.RAZORPAY_KEY?.trim();
     if (rzpKey) {
@@ -72,11 +78,16 @@ app.listen(PORT, () => {
 connectDB();
 cloudinaryConnect();
 
+const contestRoutes = require('./routes/contestRoutes');
+const problemRoutes = require('./routes/problemRoutes');
+
 // mount route
 app.use('/api/v1/auth', userRoutes);
 app.use('/api/v1/profile', profileRoutes);
 app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/v1/course', courseRoutes);
+app.use('/api/v1/contest', contestRoutes);
+app.use('/api/v1/problem', problemRoutes);
 
 
 
