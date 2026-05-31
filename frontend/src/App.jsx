@@ -27,6 +27,7 @@ import ContestDetails from './pages/ContestDetails';
 import ContestWorkspace from './pages/ContestWorkspace';
 import ContestLeaderboard from './pages/ContestLeaderboard';
 import ContestReport from './pages/ContestReport';
+import MockAssessmentWrapper from './components/Assessment/MockAssessmentWrapper';
  
 import Navbar from "./components/common/Navbar"
 
@@ -158,6 +159,7 @@ function App() {
           <Route path="contests" element={<PageTransition><Contests /></PageTransition>} />
           <Route path="contests/:contestId" element={<PageTransition><ContestDetails /></PageTransition>} />
           <Route path="contest-workspace/:contestId" element={<PageTransition><ContestWorkspace /></PageTransition>} />
+          <Route path="assessment-preview" element={<PageTransition><MockAssessmentWrapper /></PageTransition>} />
           <Route path="contests/:contestId/leaderboard" element={<PageTransition><ContestLeaderboard /></PageTransition>} />
           <Route path="contests/:contestId/report" element={<PageTransition><ContestReport /></PageTransition>} />
 

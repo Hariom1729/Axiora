@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const testCaseSchema = new mongoose.Schema({
-    input: { type: String, required: true },
-    expectedOutput: { type: String, required: true },
+    input: { type: mongoose.Schema.Types.Mixed, required: true },
+    expectedOutput: { type: mongoose.Schema.Types.Mixed, required: true },
     isPublic: { type: Boolean, default: false }
 });
 
@@ -19,6 +19,20 @@ const problemSchema = new mongoose.Schema({
     timeLimit: { type: Number, default: 1000 }, // milliseconds
     memoryLimit: { type: Number, default: 256000 }, // kilobytes
     
+    // LeetCode-style metadata
+    functionName: { type: String },
+    returnType: { type: String },
+    parameters: [{
+        name: { type: String },
+        type: { type: String }
+    }],
+    starterCode: {
+        cpp: { type: String },
+        java: { type: String },
+        python: { type: String },
+        javascript: { type: String }
+    },
+
     // MCQ specific fields
     options: [{ type: String }],
     correctAnswer: { type: String },

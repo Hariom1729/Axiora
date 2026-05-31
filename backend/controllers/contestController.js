@@ -317,3 +317,261 @@ exports.completeContest = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Failed to complete contest', error: error.message });
     }
 };
+
+// Submit Coding Answer
+exports.submitCoding = async (req, res) => {
+    try {
+        const { contestId, problemId, code, language } = req.body;
+        const userId = req.user._id;
+
+        const Submission = require('../models/Submission');
+        const Leaderboard = require('../models/Leaderboard');
+        const Problem = require('../models/Problem');
+
+        const problem = await Problem.findById(problemId);
+        if (!problem) {
+            return res.status(404).json({ success: false, message: 'Problem not found' });
+        }
+
+        const fs = require('fs');
+        const path = require('path');
+        const { exec } = require('child_process');
+        const crypto = require('crypto');
+        const util = require('util');
+        const execPromise = util.promisify(exec);
+        const JudgeEngine = require('../utils/judge/JudgeEngine');
+
+        let isCorrect = true;
+        let failedExpected = "";
+        let failedActual = "";
+
+        if (problem.testCases && problem.testCases.length > 0) {
+            const tempDir = path.join(__dirname, '../temp');
+            if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+            for (let tc of problem.testCases) {
+                const jobId = crypto.randomBytes(8).toString('hex');
+                let filename = '';
+                const inputFilePath = path.join(tempDir, `${jobId}.txt`);
+                fs.writeFileSync(inputFilePath, ""); // No stdin needed with generated driver
+
+                let output = "";
+                let finalCode = code;
+
+                try {
+                    // Inject Boilerplate dynamically
+                    finalCode = JudgeEngine.generate(language, problem, tc.input, code);
+                } catch (genError) {
+                    console.error("Generator Error:", genError);
+                    return res.status(500).json({ success: false, message: 'Failed to generate driver for testcase' });
+                }
+
+                try {
+                    const axios = require('axios');
+                    let jdoodleLang = language;
+                    let jdoodleVersion = "0";
+                    
+                    if (language === 'cpp' || language === 'c++') { jdoodleLang = 'cpp17'; jdoodleVersion = '0'; }
+                    else if (language === 'python') { jdoodleLang = 'python3'; jdoodleVersion = '3'; }
+                    else if (language === 'javascript') { jdoodleLang = 'nodejs'; jdoodleVersion = '3'; }
+                    else if (language === 'java') { jdoodleLang = 'java'; jdoodleVersion = '3'; }
+
+                    const res = await axios.post('https://api.jdoodle.com/v1/execute', {
+                        clientId: process.env.JDOODLE_CLIENT_ID,
+                        clientSecret: process.env.JDOODLE_CLIENT_SECRET,
+                        script: finalCode,
+                        language: jdoodleLang,
+                        versionIndex: jdoodleVersion,
+                        stdin: ""
+                    });
+
+                    if (res.data && res.data.output) {
+                        output = res.data.output;
+                    } else {
+                        throw new Error("JDoodle API execution failed");
+                    }
+                } catch (jdoodleError) {
+                    // API Failed, return a distinct error to the user
+                    console.error("Remote execution API Error:", jdoodleError.response ? jdoodleError.response.data : jdoodleError.message);
+                    isCorrect = false;
+                    failedExpected = "Valid API connection";
+                    failedActual = `Compilation API Error: ${jdoodleError.response?.data?.error || jdoodleError.message}`;
+                    if (fs.existsSync(inputFilePath)) fs.unlinkSync(inputFilePath);
+                    break;
+                }
+
+                // Generic Output Comparison
+                let actualTrimmed = output.trim();
+                let expectedTrimmed = "";
+                
+                try {
+                    // Serialize the JSON expected output to a string so it matches C++ stdout representation
+                    // We assume C++ serialize output is compact like [0,1] instead of [0, 1] unless we are careful.
+                    // We will parse actualTrimmed if possible, to do deep object equality
+                    const actualObj = JSON.parse(actualTrimmed);
+                    
+                    const lodash = require('lodash'); // Using lodash for deep equality
+                    if (!lodash.isEqual(actualObj, tc.expectedOutput)) {
+                        isCorrect = false;
+                        failedExpected = JSON.stringify(tc.expectedOutput);
+                        failedActual = actualTrimmed;
+                        break;
+                    }
+                } catch (e) {
+                    // Fallback to strict string comparison if not valid JSON
+                    expectedTrimmed = typeof tc.expectedOutput === 'string' ? tc.expectedOutput.trim() : JSON.stringify(tc.expectedOutput);
+                    if (actualTrimmed !== expectedTrimmed) {
+                        isCorrect = false;
+                        failedExpected = expectedTrimmed;
+                        failedActual = actualTrimmed;
+                        break;
+                    }
+                }
+            }
+        } else {
+            isCorrect = code && code.trim().length > 10;
+        }
+
+        const verdict = isCorrect ? 'Accepted' : 'Wrong Answer';
+
+        // Create submission record
+        const submission = await Submission.create({
+            user: userId,
+            contest: contestId,
+            problem: problemId,
+            language: language || 'cpp',
+            sourceCode: code,
+            verdict
+        });
+
+        // Update Leaderboard dynamically
+        let leaderboardEntry = await Leaderboard.findOne({ contest: contestId, user: userId });
+        if (!leaderboardEntry) {
+            leaderboardEntry = await Leaderboard.create({
+                contest: contestId,
+                user: userId,
+                score: isCorrect ? (problem.marks || 10) : 0,
+                solvedProblems: isCorrect ? [{
+                    problem: problemId,
+                    attempts: 1,
+                    timeTaken: Math.floor((Date.now() - new Date(submission.createdAt)) / 1000)
+                }] : []
+            });
+        } else {
+            const alreadySolved = leaderboardEntry.solvedProblems.some(sp => sp.problem.toString() === problemId.toString());
+            if (isCorrect && !alreadySolved) {
+                leaderboardEntry.score += (problem.marks || 10);
+                leaderboardEntry.solvedProblems.push({
+                    problem: problemId,
+                    attempts: 1,
+                    timeTaken: Math.floor((Date.now() - new Date(submission.createdAt)) / 1000)
+                });
+                await leaderboardEntry.save();
+            }
+        }
+
+        try {
+            const { getIo } = require('../utils/socketHandler');
+            getIo().to(`contest-${contestId}`).emit('leaderboardUpdate', { message: 'Leaderboard updated dynamically' });
+        } catch (socketErr) {}
+
+        return res.status(200).json({ 
+            success: true, 
+            message: 'Solution submitted successfully!', 
+            verdict,
+            expectedOutput: isCorrect ? null : failedExpected,
+            actualOutput: isCorrect ? null : failedActual
+        });
+    } catch (error) {
+        console.error("Coding Submit Error:", error);
+        return res.status(500).json({ success: false, message: 'Failed to submit code', error: error.message });
+    }
+};
+
+// Run Code (Piston API with Local Fallback)
+exports.runCode = async (req, res) => {
+    try {
+        const { problemId, code, language, customInput } = req.body;
+        const axios = require('axios');
+        const fs = require('fs');
+        const path = require('path');
+        const crypto = require('crypto');
+        
+        const Problem = require('../models/Problem');
+        const JudgeEngine = require('../utils/judge/JudgeEngine');
+
+        const problem = await Problem.findById(problemId);
+        if (!problem) return res.status(404).json({ success: false, message: 'Problem not found' });
+
+        // Parse custom input if provided, otherwise use the first test case, or default empty values
+        let parsedInput = {};
+        if (customInput) {
+            try {
+                parsedInput = JSON.parse(customInput);
+            } catch (e) {
+                return res.status(200).json({ success: true, output: "Error: Custom input must be valid JSON matching the parameters." });
+            }
+        } else if (problem.testCases && problem.testCases.length > 0) {
+            // Default to first testcase if no custom input provided
+            parsedInput = problem.testCases[0].input;
+        } else {
+            // Default empty inputs based on parameters
+            if (problem.parameters) {
+                problem.parameters.forEach(p => {
+                    if (p.type === 'int') parsedInput[p.name] = 0;
+                    else if (p.type.includes('vector')) parsedInput[p.name] = [];
+                    else if (p.type === 'string') parsedInput[p.name] = "";
+                    else parsedInput[p.name] = null;
+                });
+            }
+        }
+
+        let finalCode;
+        try {
+            finalCode = JudgeEngine.generate(language, problem, parsedInput, code);
+        } catch (genError) {
+            return res.status(500).json({ success: false, message: 'Failed to generate execution driver' });
+        }
+
+        // Execute via JDoodle
+        try {
+            let jdoodleLang = language;
+            let jdoodleVersion = "0";
+            
+            if (language === 'cpp' || language === 'c++') { jdoodleLang = 'cpp17'; jdoodleVersion = '0'; }
+            else if (language === 'python') { jdoodleLang = 'python3'; jdoodleVersion = '3'; }
+            else if (language === 'javascript') { jdoodleLang = 'nodejs'; jdoodleVersion = '3'; }
+            else if (language === 'java') { jdoodleLang = 'java'; jdoodleVersion = '3'; }
+
+            const response = await axios.post('https://api.jdoodle.com/v1/execute', {
+                clientId: process.env.JDOODLE_CLIENT_ID,
+                clientSecret: process.env.JDOODLE_CLIENT_SECRET,
+                script: finalCode,
+                language: jdoodleLang,
+                versionIndex: jdoodleVersion,
+                stdin: ""
+            });
+
+            const data = response.data;
+            if (data && data.output) {
+                return res.status(200).json({ 
+                    success: true, 
+                    output: data.output || "Execution finished with no output",
+                    method: "JDoodle API"
+                });
+            } else {
+                throw new Error("JDoodle API execution failed");
+            }
+        } catch (jdoodleError) {
+            console.error("Remote execution API Error:", jdoodleError.response ? jdoodleError.response.data : jdoodleError.message);
+            return res.status(200).json({
+                success: true,
+                output: `Compilation API Error: ${jdoodleError.response?.data?.error || jdoodleError.message}`
+            });
+        }
+
+    } catch (error) {
+        console.error("Run Code Error:", error);
+        return res.status(500).json({ success: false, message: 'Failed to execute code on backend', error: error.message });
+    }
+};

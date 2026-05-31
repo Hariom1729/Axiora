@@ -20,7 +20,10 @@ import {
     FaRegStickyNote,
     FaRegBookmark,
     FaBookmark,
-    FaClock
+    FaClock,
+    FaExpand,
+    FaCompress,
+    FaTerminal
 } from 'react-icons/fa';
 
 // Digital Canvas Space Background particles using requestAnimationFrame
@@ -166,6 +169,11 @@ const ContestWorkspace = () => {
     const [showSidebar, setShowSidebar] = useState(true);
     const [direction, setDirection] = useState(1); 
 
+    const [fontSize, setFontSize] = useState(14);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [customInput, setCustomInput] = useState('');
+    const [activeConsoleTab, setActiveConsoleTab] = useState('testcases'); 
+
     const [notes, setNotes] = useState(() => {
         try {
             const saved = localStorage.getItem(`contest_notes_${contestId}`);
@@ -271,6 +279,13 @@ const ContestWorkspace = () => {
 
     const activeProblem = problems[selectedProblemIndex];
 
+    useEffect(() => {
+        if (activeProblem && activeProblem.type === 'Coding') {
+            const starter = activeProblem.starterCode?.[language === 'cpp' || language === 'c++' ? 'cpp' : language];
+            setCode(starter || '// Write your solution here...');
+        }
+    }, [activeProblem, language]);
+
     const handleSubmitMcq = async () => {
         if (!mcqAnswer) {
             toast.error("Please select an answer option");
@@ -297,11 +312,13 @@ const ContestWorkspace = () => {
 
     const handleRunCode = async () => {
         setConsoleOutput('Executing test cases...');
+        setActiveConsoleTab('console');
         try {
             const response = await apiConnector("POST", `${import.meta.env.VITE_APP_BASE_URL}/contest/run-code`, {
                 problemId: activeProblem._id,
                 code,
-                language
+                language,
+                customInput
             }, { Authorization: `Bearer ${token}` });
 
             if (response?.data?.success) {
@@ -348,17 +365,61 @@ const ContestWorkspace = () => {
         }
     };
 
+    const handleSubmitCoding = async () => {
+        try {
+            setConsoleOutput('Submitting and evaluating test cases...');
+            setActiveConsoleTab('console');
+
+            const response = await apiConnector(
+                "POST",
+                `${import.meta.env.VITE_APP_BASE_URL}/contest/submit-coding`,
+                {
+                    contestId,
+                    problemId: activeProblem._id,
+                    code,
+                    language
+                },
+                { Authorization: `Bearer ${token}` }
+            );
+            if (response?.data?.success) {
+                if (response.data.verdict === 'Accepted') {
+                    toast.success("Solution Accepted! Moving to next problem.");
+                    setConsoleOutput("Status: Accepted ✅\nAll test cases passed!");
+                    return true;
+                } else {
+                    toast.error("Wrong Answer! Please check your code.");
+                    setConsoleOutput(`Status: Wrong Answer ❌\n\nExpected Output:\n${response.data.expectedOutput}\n\nYour Output:\n${response.data.actualOutput}`);
+                    return false;
+                }
+            } else {
+                toast.error("Failed to submit code");
+                return false;
+            }
+        } catch (error) {
+            console.error("Coding Submit Error:", error);
+            toast.error("Error submitting code");
+            return false;
+        }
+    };
+
     const handleSaveAndNext = async () => {
+        let shouldAdvance = true;
+
         if (activeProblem.type === 'MCQ' && mcqAnswer) {
             await handleSubmitMcq();
+        } else if (activeProblem.type !== 'MCQ' && code) {
+            shouldAdvance = await handleSubmitCoding();
         }
-        if (selectedProblemIndex < problems.length - 1) {
-            setDirection(1);
-            setSelectedProblemIndex(selectedProblemIndex + 1);
-            setMcqAnswer('');
-            setConsoleOutput('');
-        } else {
-            toast.success("All questions reviewed! You can submit the test using 'End Test'.");
+        
+        if (shouldAdvance) {
+            if (selectedProblemIndex < problems.length - 1) {
+                setDirection(1);
+                setSelectedProblemIndex(selectedProblemIndex + 1);
+                setMcqAnswer('');
+                setConsoleOutput('');
+            } else {
+                toast.success("All questions reviewed! You can submit the test using 'End Test'.");
+            }
         }
     };
 
@@ -783,9 +844,9 @@ const ContestWorkspace = () => {
                                 </div>
                             ) : (
                                 /* Coding Workspace View */
-                                <div className="flex-1 flex overflow-hidden">
-                                    {/* Problem details panel wrapper */}
-                                    <div className={`${showSidebar ? 'w-[35%]' : 'w-[45%]' } overflow-hidden relative ${currentStyle.editorBorder} transition-all duration-300`}>
+                                <div className={`flex-1 flex overflow-hidden ${isFullscreen ? 'fixed inset-0 z-[100] bg-richblack-950' : ''}`}>
+                                    {/* Left: Problem details panel */}
+                                    <div className={`${isFullscreen ? 'hidden' : 'w-1/2'} overflow-y-auto border-r border-richblack-800 transition-all duration-300 bg-richblack-900`}>
                                         <AnimatePresence mode="wait" custom={direction}>
                                             <motion.div 
                                                 key={selectedProblemIndex}
@@ -794,14 +855,14 @@ const ContestWorkspace = () => {
                                                 initial="enter"
                                                 animate="center"
                                                 exit="exit"
-                                                className="absolute inset-0 overflow-y-auto p-8 space-y-6"
+                                                className="p-6 space-y-6"
                                             >
                                                 <div className="flex justify-between items-center">
                                                     <span className="bg-yellow-25/10 text-yellow-50 text-[10px] font-bold px-2 py-0.5 rounded border border-yellow-25/20 uppercase">
-                                                        {activeProblem.difficulty}
+                                                        {activeProblem.difficulty || 'Easy'}
                                                     </span>
                                                 </div>
-                                                <h2 className="text-2xl font-extrabold">{activeProblem.title}</h2>
+                                                <h2 className="text-2xl font-extrabold text-white">{activeProblem.title}</h2>
 
                                                 <div className="space-y-6 text-richblack-200">
                                                     <div>
@@ -813,13 +874,19 @@ const ContestWorkspace = () => {
                                                     {activeProblem.constraints && (
                                                         <div>
                                                             <h3 className="text-white font-bold border-b border-richblack-800 pb-2">Constraints</h3>
-                                                            <pre className="mt-3 font-mono text-sm bg-richblack-900 p-3 rounded-lg border border-richblack-800">{activeProblem.constraints}</pre>
+                                                            <pre className="mt-3 font-mono text-sm bg-richblack-950 p-3 rounded-lg border border-richblack-800">{activeProblem.constraints}</pre>
                                                         </div>
                                                     )}
                                                     {activeProblem.examples && (
                                                         <div>
                                                             <h3 className="text-white font-bold border-b border-richblack-800 pb-2">Examples</h3>
-                                                            <pre className="mt-3 font-mono text-sm bg-richblack-900 p-4 rounded-lg border border-richblack-800 overflow-x-auto whitespace-pre-wrap">{activeProblem.examples}</pre>
+                                                            <pre className="mt-3 font-mono text-sm bg-richblack-950 p-4 rounded-lg border border-richblack-800 overflow-x-auto whitespace-pre-wrap">{activeProblem.examples}</pre>
+                                                        </div>
+                                                    )}
+                                                    {activeProblem.editorial && (
+                                                        <div>
+                                                            <h3 className="text-white font-bold border-b border-richblack-800 pb-2">Explanation</h3>
+                                                            <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap">{activeProblem.editorial}</p>
                                                         </div>
                                                     )}
                                                 </div>
@@ -827,66 +894,143 @@ const ContestWorkspace = () => {
                                         </AnimatePresence>
                                     </div>
 
-                                    {/* Coding Editor playground */}
-                                    <div className={`${showSidebar ? 'w-[45%]' : 'w-[55%]'} flex flex-col overflow-hidden bg-richblack-950 transition-all duration-300`}>
+                                    {/* Right: Coding Editor & Test Cases */}
+                                    <div className={`${isFullscreen ? 'w-full' : 'w-1/2'} flex flex-col overflow-hidden bg-richblack-950 transition-all duration-300`}>
                                         {/* Action Bar */}
-                                        <div className="h-12 border-b border-richblack-800 bg-richblack-900/40 flex justify-between items-center px-4">
-                                            <select
-                                                value={language}
-                                                onChange={(e) => setLanguage(e.target.value)}
-                                                className="bg-richblack-800 text-white text-xs p-1 px-3 rounded-lg outline-none border border-richblack-700"
-                                            >
-                                                <option value="javascript">JavaScript</option>
-                                                <option value="python">Python</option>
-                                                <option value="cpp">C++</option>
-                                                <option value="java">Java</option>
-                                            </select>
-                                            <div className="flex gap-2">
-                                                <button 
-                                                    onClick={handleRunCode} 
-                                                    className="bg-richblack-800 border border-richblack-700 hover:bg-richblack-700 text-[11px] px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all text-white"
+                                        <div className="h-12 border-b border-richblack-800 bg-richblack-900/40 flex justify-between items-center px-4 shrink-0">
+                                            <div className="flex items-center gap-4">
+                                                <select
+                                                    value={language}
+                                                    onChange={(e) => setLanguage(e.target.value)}
+                                                    className="bg-richblack-800 text-white text-xs p-1.5 px-3 rounded-lg outline-none border border-richblack-700 font-bold"
                                                 >
-                                                    <VscPlay /> Run Code
-                                                </button>
+                                                    <option value="cpp">C++17</option>
+                                                    <option value="javascript">JavaScript</option>
+                                                    <option value="python">Python</option>
+                                                    <option value="java">Java</option>
+                                                </select>
+                                                <div className="flex bg-richblack-800 rounded-lg p-0.5">
+                                                    <button 
+                                                        onClick={() => setFontSize(f => Math.max(10, f - 2))}
+                                                        className="px-2 py-1 text-richblack-300 hover:text-white transition-colors"
+                                                        title="Decrease Font Size"
+                                                    >
+                                                        A-
+                                                    </button>
+                                                    <div className="w-px bg-richblack-700 my-1"></div>
+                                                    <button 
+                                                        onClick={() => setFontSize(f => Math.min(24, f + 2))}
+                                                        className="px-2 py-1 text-richblack-300 hover:text-white transition-colors"
+                                                        title="Increase Font Size"
+                                                    >
+                                                        A+
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex gap-3 items-center">
                                                 <button 
-                                                    onClick={handleSaveAndNext}
-                                                    className="bg-[#EAFF20] hover:bg-[#d5eb1b] text-black text-[11px] px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all"
+                                                    onClick={() => setIsFullscreen(!isFullscreen)}
+                                                    className="text-richblack-300 hover:text-white transition-colors p-1.5"
+                                                    title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
                                                 >
-                                                    <VscCheck /> Submit & Next
+                                                    {isFullscreen ? <FaCompress /> : <FaExpand />}
                                                 </button>
                                             </div>
                                         </div>
 
                                         {/* Monaco Editor */}
-                                        <div className="flex-1 relative border-b border-richblack-800">
+                                        <div className="flex-1 relative">
                                             <Editor
                                                 height="100%"
                                                 language={language}
-                                                theme={theme === 'light' ? 'light' : 'vs-dark'}
+                                                theme="vs-dark"
                                                 value={code}
                                                 onChange={(val) => setCode(val || '')}
                                                 options={{
                                                     minimap: { enabled: false },
-                                                    fontSize: 14,
+                                                    fontSize: fontSize,
                                                     fontFamily: 'Fira Code, monospace',
                                                     automaticLayout: true,
-                                                    padding: { top: 16 }
+                                                    padding: { top: 16 },
+                                                    lineNumbers: 'on',
+                                                    autoIndent: 'full',
+                                                    matchBrackets: 'always',
+                                                    folding: true
                                                 }}
                                             />
                                         </div>
 
-                                        {/* Terminal execution output */}
-                                        <div className="h-1/3 bg-richblack-900/40 p-4 font-mono overflow-y-auto flex flex-col">
-                                            <span className="text-[10px] text-richblack-400 font-bold uppercase tracking-wider border-b border-richblack-800 pb-1">Console</span>
-                                            <div className="flex-1 mt-2 text-xs text-caribbeangreen-200 whitespace-pre-wrap">{consoleOutput || 'Click "Run Code" to compile and execute.'}</div>
+                                        {/* Test Cases & Console Panel */}
+                                        <div className="h-64 border-t border-richblack-800 bg-richblack-900/60 flex flex-col shrink-0">
+                                            <div className="flex items-center justify-between px-4 bg-richblack-900 border-b border-richblack-800">
+                                                <div className="flex gap-4">
+                                                    <button 
+                                                        onClick={() => setActiveConsoleTab('testcases')}
+                                                        className={`py-2 text-xs font-bold border-b-2 transition-colors ${activeConsoleTab === 'testcases' ? 'border-[#EAFF20] text-[#EAFF20]' : 'border-transparent text-richblack-400 hover:text-white'}`}
+                                                    >
+                                                        Test Cases
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => setActiveConsoleTab('console')}
+                                                        className={`py-2 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 ${activeConsoleTab === 'console' ? 'border-[#EAFF20] text-[#EAFF20]' : 'border-transparent text-richblack-400 hover:text-white'}`}
+                                                    >
+                                                        <FaTerminal size={10} /> Test Result
+                                                    </button>
+                                                </div>
+                                                <div className="flex items-center gap-2 py-1.5">
+                                                    <button 
+                                                        onClick={handleRunCode} 
+                                                        className="bg-richblack-800 border border-richblack-700 hover:bg-richblack-700 text-[11px] px-4 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all text-white shadow-sm"
+                                                    >
+                                                        <VscPlay /> Run Code
+                                                    </button>
+                                                    <button 
+                                                        onClick={handleSaveAndNext}
+                                                        className="bg-[#EAFF20] hover:bg-[#d5eb1b] text-black text-[11px] px-4 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(234,255,32,0.2)]"
+                                                    >
+                                                        <VscCheck /> Submit Solution
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                                                {activeConsoleTab === 'testcases' ? (
+                                                    <div className="flex flex-col h-full gap-2">
+                                                        <label className="text-xs font-bold text-richblack-300">Custom Input</label>
+                                                        <textarea 
+                                                            value={customInput}
+                                                            onChange={(e) => setCustomInput(e.target.value)}
+                                                            className="flex-1 bg-richblack-950 border border-richblack-800 rounded-lg p-3 text-sm font-mono text-white resize-none outline-none focus:border-[#EAFF20]/50 transition-colors"
+                                                            placeholder="Enter custom input to test your code..."
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-col h-full gap-2">
+                                                        {consoleOutput === 'Executing test cases...' ? (
+                                                            <div className="flex items-center gap-3 text-richblack-300 text-sm p-2">
+                                                                <div className="w-4 h-4 border-2 border-richblack-600 border-t-[#EAFF20] rounded-full animate-spin"></div>
+                                                                Running against test cases...
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <label className="text-xs font-bold text-richblack-300">Execution Output</label>
+                                                                <pre className={`bg-richblack-950 border border-richblack-800 rounded-lg p-3 text-sm font-mono flex-1 overflow-auto ${consoleOutput.includes('Error') || consoleOutput.includes('failed') ? 'text-pink-400' : 'text-caribbeangreen-200'}`}>
+                                                                    {consoleOutput || 'Click "Run Code" to compile and execute your solution.'}
+                                                                </pre>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             )}
 
                             {/* Dynamic Right Sidebar - Notes Only */}
-                            {showSidebar && (
-                                <div className={`${activeProblem.type === 'MCQ' ? 'w-[38%]' : 'w-[20%]'} flex flex-col p-6 space-y-6 overflow-y-auto shrink-0 transition-colors duration-300 ${currentStyle.sideBg}`}>
+                            {showSidebar && activeProblem.type === 'MCQ' && (
+                                <div className={`w-[38%] flex flex-col p-6 space-y-6 overflow-y-auto shrink-0 transition-colors duration-300 ${currentStyle.sideBg}`}>
                                     
                                     {/* Personal Notes Card Section */}
                                     <div className="space-y-4 flex-1 flex flex-col">

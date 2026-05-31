@@ -4,14 +4,34 @@ const Contest = require('../models/Contest');
 // Create Problem and add to Contest
 exports.createProblem = async (req, res) => {
     try {
-        const { contestId, title, type, statement, constraints, examples, difficulty, tags, testCases, options, correctAnswer, marks } = req.body;
+        const { contestId, title, type, statement, difficulty, tags, constraints, examples, testCases, options, correctAnswer, marks, functionName, returnType, parameters, starterCode } = req.body;
 
-        if (!title || !difficulty) {
-            return res.status(400).json({ success: false, message: 'Title and difficulty are required' });
+        // Validation
+        if (!contestId || !title || !type || !difficulty) {
+            return res.status(400).json({ success: false, message: 'Missing required fields' });
+        }
+
+        const contest = await Contest.findById(contestId);
+        if (!contest) {
+            return res.status(404).json({ success: false, message: 'Contest not found' });
         }
 
         const problem = await Problem.create({
-            title, type, statement, constraints, examples, difficulty, tags, testCases, options, correctAnswer, marks
+            title,
+            type,
+            statement,
+            difficulty,
+            tags,
+            constraints,
+            examples,
+            testCases,
+            options,
+            correctAnswer,
+            marks,
+            functionName,
+            returnType,
+            parameters,
+            starterCode
         });
 
         // If contestId is provided, link this problem to the contest

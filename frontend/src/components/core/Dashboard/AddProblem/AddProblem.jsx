@@ -23,7 +23,19 @@ const AddProblem = () => {
         statement: '',
         constraints: '',
         examples: '',
+        functionName: '',
+        returnType: 'int',
     });
+    
+    const [parameters, setParameters] = useState([{ name: '', type: 'int' }]);
+    
+    const [starterCode, setStarterCode] = useState({
+        cpp: '',
+        java: '',
+        python: '',
+        javascript: ''
+    });
+
     const [testCases, setTestCases] = useState([{ input: '', expectedOutput: '', isPublic: false }]);
 
     // MCQ specific state
@@ -39,6 +51,26 @@ const AddProblem = () => {
 
     const handleCodingChange = (e) => {
         setCodingData({ ...codingData, [e.target.name]: e.target.value });
+    };
+
+    const handleStarterCodeChange = (language, value) => {
+        setStarterCode({ ...starterCode, [language]: value });
+    };
+
+    // Parameter helpers
+    const handleParameterChange = (index, field, value) => {
+        const newParams = [...parameters];
+        newParams[index][field] = value;
+        setParameters(newParams);
+    };
+
+    const addParameter = () => {
+        setParameters([...parameters, { name: '', type: 'int' }]);
+    };
+
+    const removeParameter = (index) => {
+        if (parameters.length === 1) return;
+        setParameters(parameters.filter((_, i) => i !== index));
     };
 
     // Test cases helper
@@ -68,6 +100,29 @@ const AddProblem = () => {
         e.preventDefault();
         setLoading(true);
 
+        let formattedTestCases = [...testCases];
+        if (type === 'Coding') {
+            try {
+                formattedTestCases = testCases.map(tc => {
+                    // Try to parse input and expectedOutput as JSON (for new generic engine)
+                    let parsedInput = tc.input;
+                    let parsedExpectedOutput = tc.expectedOutput;
+                    try { parsedInput = JSON.parse(tc.input); } catch(e) {}
+                    try { parsedExpectedOutput = JSON.parse(tc.expectedOutput); } catch(e) {}
+                    
+                    return {
+                        ...tc,
+                        input: parsedInput,
+                        expectedOutput: parsedExpectedOutput
+                    }
+                });
+            } catch (err) {
+                toast.error("Invalid JSON format in test cases");
+                setLoading(false);
+                return;
+            }
+        }
+
         const payload = {
             contestId,
             title: commonData.title,
@@ -78,7 +133,11 @@ const AddProblem = () => {
                 statement: codingData.statement,
                 constraints: codingData.constraints,
                 examples: codingData.examples,
-                testCases
+                functionName: codingData.functionName,
+                returnType: codingData.returnType,
+                parameters: parameters,
+                starterCode: starterCode,
+                testCases: formattedTestCases
             } : {
                 options: mcqData.options,
                 correctAnswer: mcqData.correctAnswer,
@@ -217,6 +276,81 @@ const AddProblem = () => {
                                     className="bg-richblack-700 p-3 rounded-lg outline-none border border-richblack-600 focus:border-yellow-50"
                                     placeholder="Example 1: Input: 5, Output: 10"
                                 />
+                            </div>
+                        </div>
+
+                        {/* Execution Metadata Builder */}
+                        <div className="space-y-4 pt-4 border-t border-richblack-700">
+                            <h3 className="text-lg font-bold border-b border-richblack-700 pb-2">Execution Metadata*</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-richblack-100 text-sm font-semibold">Function Name*</label>
+                                    <input
+                                        type="text"
+                                        name="functionName"
+                                        value={codingData.functionName}
+                                        onChange={handleCodingChange}
+                                        required
+                                        className="bg-richblack-700 p-3 rounded-lg outline-none border border-richblack-600 focus:border-yellow-50"
+                                        placeholder="e.g. twoSum"
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-richblack-100 text-sm font-semibold">Return Type*</label>
+                                    <input
+                                        type="text"
+                                        name="returnType"
+                                        value={codingData.returnType}
+                                        onChange={handleCodingChange}
+                                        required
+                                        className="bg-richblack-700 p-3 rounded-lg outline-none border border-richblack-600 focus:border-yellow-50"
+                                        placeholder="e.g. int, vector<int>, string"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="flex flex-col gap-2">
+                                <label className="text-richblack-100 text-sm font-semibold">Parameters*</label>
+                                {parameters.map((param, index) => (
+                                    <div key={index} className="flex gap-4 items-center">
+                                        <input
+                                            type="text"
+                                            value={param.name}
+                                            onChange={(e) => handleParameterChange(index, 'name', e.target.value)}
+                                            placeholder="Param Name (e.g. nums)"
+                                            className="bg-richblack-700 p-2 rounded-lg outline-none border border-richblack-600 focus:border-yellow-50 flex-1"
+                                            required
+                                        />
+                                        <input
+                                            type="text"
+                                            value={param.type}
+                                            onChange={(e) => handleParameterChange(index, 'type', e.target.value)}
+                                            placeholder="Type (e.g. vector<int>)"
+                                            className="bg-richblack-700 p-2 rounded-lg outline-none border border-richblack-600 focus:border-yellow-50 flex-1"
+                                            required
+                                        />
+                                        {parameters.length > 1 && (
+                                            <button type="button" onClick={() => removeParameter(index)} className="text-pink-200">Remove</button>
+                                        )}
+                                    </div>
+                                ))}
+                                <button type="button" onClick={addParameter} className="self-start text-yellow-50 text-sm mt-1">+ Add Parameter</button>
+                            </div>
+
+                            <div className="flex flex-col gap-4 mt-4">
+                                <label className="text-richblack-100 text-sm font-semibold">Starter Code (Boilerplate)*</label>
+                                {['cpp', 'java', 'python', 'javascript'].map((lang) => (
+                                    <div key={lang}>
+                                        <label className="text-xs text-richblack-300 capitalize mb-1 block">{lang}</label>
+                                        <textarea
+                                            value={starterCode[lang]}
+                                            onChange={(e) => handleStarterCodeChange(lang, e.target.value)}
+                                            className="w-full bg-richblack-700 p-3 rounded-lg outline-none border border-richblack-600 focus:border-yellow-50 font-mono text-sm"
+                                            rows="4"
+                                            placeholder={`class Solution {\n...`}
+                                        />
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
