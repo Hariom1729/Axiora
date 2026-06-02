@@ -376,26 +376,27 @@ exports.submitCoding = async (req, res) => {
                     else if (language === 'javascript') { jdoodleLang = 'nodejs'; jdoodleVersion = '3'; }
                     else if (language === 'java') { jdoodleLang = 'java'; jdoodleVersion = '3'; }
 
-                    const res = await axios.post('https://api.jdoodle.com/v1/execute', {
-                        clientId: process.env.JDOODLE_CLIENT_ID,
-                        clientSecret: process.env.JDOODLE_CLIENT_SECRET,
-                        script: finalCode,
-                        language: jdoodleLang,
-                        versionIndex: jdoodleVersion,
-                        stdin: ""
+                    const res = await axios.post('http://13.51.207.183:8000/api/v1/execute/external', {
+                        language: jdoodleLang, // Map the old variables if needed
+                        code: finalCode
+                    }, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': 'axiora_secret_live_key_2026'
+                        }
                     });
 
-                    if (res.data && res.data.output) {
+                    if (res.data && res.data.output !== undefined) {
                         output = res.data.output;
                     } else {
-                        throw new Error("JDoodle API execution failed");
+                        throw new Error("AWS API execution failed");
                     }
-                } catch (jdoodleError) {
+                } catch (awsError) {
                     // API Failed, return a distinct error to the user
-                    console.error("Remote execution API Error:", jdoodleError.response ? jdoodleError.response.data : jdoodleError.message);
+                    console.error("Remote execution API Error:", awsError.response ? awsError.response.data : awsError.message);
                     isCorrect = false;
                     failedExpected = "Valid API connection";
-                    failedActual = `Compilation API Error: ${jdoodleError.response?.data?.error || jdoodleError.message}`;
+                    failedActual = `Compilation API Error: ${awsError.response?.data?.error || awsError.message}`;
                     if (fs.existsSync(inputFilePath)) fs.unlinkSync(inputFilePath);
                     break;
                 }
@@ -533,40 +534,39 @@ exports.runCode = async (req, res) => {
             return res.status(500).json({ success: false, message: 'Failed to generate execution driver' });
         }
 
-        // Execute via JDoodle
+        // Execute via AWS Engine
         try {
-            let jdoodleLang = language;
-            let jdoodleVersion = "0";
-            
-            if (language === 'cpp' || language === 'c++') { jdoodleLang = 'cpp17'; jdoodleVersion = '0'; }
-            else if (language === 'python') { jdoodleLang = 'python3'; jdoodleVersion = '3'; }
-            else if (language === 'javascript') { jdoodleLang = 'nodejs'; jdoodleVersion = '3'; }
-            else if (language === 'java') { jdoodleLang = 'java'; jdoodleVersion = '3'; }
+            let awsLang = language;
+            if (language === 'cpp' || language === 'c++') { awsLang = 'cpp17'; }
+            else if (language === 'python') { awsLang = 'python3'; }
+            else if (language === 'javascript') { awsLang = 'nodejs'; }
+            else if (language === 'java') { awsLang = 'java'; }
 
-            const response = await axios.post('https://api.jdoodle.com/v1/execute', {
-                clientId: process.env.JDOODLE_CLIENT_ID,
-                clientSecret: process.env.JDOODLE_CLIENT_SECRET,
-                script: finalCode,
-                language: jdoodleLang,
-                versionIndex: jdoodleVersion,
-                stdin: ""
+            const response = await axios.post('http://13.51.207.183:8000/api/v1/execute/external', {
+                language: awsLang,
+                code: finalCode
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': 'axiora_secret_live_key_2026'
+                }
             });
 
             const data = response.data;
-            if (data && data.output) {
+            if (data && data.output !== undefined) {
                 return res.status(200).json({ 
                     success: true, 
                     output: data.output || "Execution finished with no output",
-                    method: "JDoodle API"
+                    method: "AWS Execution API"
                 });
             } else {
-                throw new Error("JDoodle API execution failed");
+                throw new Error("AWS API execution failed");
             }
-        } catch (jdoodleError) {
-            console.error("Remote execution API Error:", jdoodleError.response ? jdoodleError.response.data : jdoodleError.message);
+        } catch (awsError) {
+            console.error("Remote execution API Error:", awsError.response ? awsError.response.data : awsError.message);
             return res.status(200).json({
                 success: true,
-                output: `Compilation API Error: ${jdoodleError.response?.data?.error || jdoodleError.message}`
+                output: `Compilation API Error: ${awsError.response?.data?.error || awsError.message}`
             });
         }
 
