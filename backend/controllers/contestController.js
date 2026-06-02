@@ -376,13 +376,13 @@ exports.submitCoding = async (req, res) => {
                     else if (language === 'javascript') { jdoodleLang = 'nodejs'; jdoodleVersion = '3'; }
                     else if (language === 'java') { jdoodleLang = 'java'; jdoodleVersion = '3'; }
 
-                    const res = await axios.post('http://13.51.207.183:8000/api/v1/execute/external', {
+                    const res = await axios.post(process.env.AWS_EXECUTION_URL, {
                         language: jdoodleLang, // Map the old variables if needed
                         code: finalCode
                     }, {
                         headers: {
                             'Content-Type': 'application/json',
-                            'x-api-key': 'axiora_secret_live_key_2026'
+                            'x-api-key': process.env.AWS_API_KEY
                         }
                     });
 
@@ -542,13 +542,13 @@ exports.runCode = async (req, res) => {
             else if (language === 'javascript') { awsLang = 'nodejs'; }
             else if (language === 'java') { awsLang = 'java'; }
 
-            const response = await axios.post('http://13.51.207.183:8000/api/v1/execute/external', {
+            const response = await axios.post(process.env.AWS_EXECUTION_URL, {
                 language: awsLang,
                 code: finalCode
             }, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': 'axiora_secret_live_key_2026'
+                    'x-api-key': process.env.AWS_API_KEY
                 }
             });
 
