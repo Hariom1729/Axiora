@@ -28,7 +28,14 @@ const AddContest = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await apiConnector("POST", contestEndpoints.CREATE_CONTEST_API, formData, {
+            // Convert local datetime strings to UTC ISO strings for the backend
+            const payload = {
+                ...formData,
+                startTime: new Date(formData.startTime).toISOString(),
+                endTime: new Date(formData.endTime).toISOString()
+            };
+
+            const response = await apiConnector("POST", contestEndpoints.CREATE_CONTEST_API, payload, {
                 Authorization: `Bearer ${token}`,
             });
             if (response?.data?.success) {
