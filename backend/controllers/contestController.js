@@ -370,6 +370,7 @@ exports.submitCoding = async (req, res) => {
                     const axios = require('axios');
                     let jdoodleLang = language;
                     if (language === 'c++') jdoodleLang = 'cpp';
+                    if (language === 'javascript') jdoodleLang = 'js';
 
                     const res = await axios.post(process.env.AWS_EXECUTION_URL, {
                         language: jdoodleLang, // Map the old variables if needed
@@ -533,6 +534,7 @@ exports.runCode = async (req, res) => {
         try {
             let awsLang = language;
             if (language === 'c++') awsLang = 'cpp';
+            if (language === 'javascript') awsLang = 'js';
 
             const response = await axios.post(process.env.AWS_EXECUTION_URL, {
                 language: awsLang,
