@@ -4,7 +4,7 @@ import CourseSubSectionAccordion from "./CourseSubSectionAccordion"
 import { IoMdArrowDropdown } from "react-icons/io"
 
 
-export default function CourseAccordionBar({ course, isActive, handleActive }) {
+export default function CourseAccordionBar({ course, isActive, handleActive, handlePlayPreview }) {
 
   const contentEl = useRef(null)
   const [active, setActive] = useState(false)  // Accordian state
@@ -51,7 +51,7 @@ export default function CourseAccordionBar({ course, isActive, handleActive }) {
       >
         <div className="text-textHead flex flex-col gap-2 px-7 py-6 font-semibold">
           {course?.subSection?.map((subSec, i) => {
-            return <CourseSubSectionAccordion subSec={subSec} key={i} />
+            return <CourseSubSectionAccordion subSec={subSec} key={i} handlePlayPreview={handlePlayPreview} />
           })}
         </div>
       </div>

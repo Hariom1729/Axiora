@@ -22,6 +22,7 @@ import { addToCart } from "../slices/cartSlice"
 import { GiReturnArrow } from 'react-icons/gi'
 import { MdOutlineVerified } from 'react-icons/md'
 import Img from './../components/common/Img';
+import { RxCross2 } from 'react-icons/rx'
 import toast from "react-hot-toast"
 
 
@@ -43,6 +44,11 @@ function CourseDetails() {
   // Declear a state to save the course details
   const [response, setResponse] = useState(null)
   const [confirmationModal, setConfirmationModal] = useState(null)
+  const [previewVideo, setPreviewVideo] = useState(null)
+
+  const handlePlayPreview = (videoUrl, title) => {
+    setPreviewVideo({ videoUrl, title })
+  }
 
   useEffect(() => {
     // Calling fetchCourseDetails fucntion to fetch the details
@@ -310,6 +316,7 @@ function CourseDetails() {
                   key={index}
                   isActive={isActive}
                   handleActive={handleActive}
+                  handlePlayPreview={handlePlayPreview}
                 />
               ))}
             </div>
@@ -336,6 +343,32 @@ function CourseDetails() {
       </div>
 
       <Footer />
+      {previewVideo && (
+        <div className="fixed inset-0 z-[1000] !mt-0 grid place-items-center overflow-auto bg-white bg-opacity-10 backdrop-blur-sm">
+          <div className="w-11/12 max-w-[800px] rounded-lg border border-richblack-400 bg-richblack-800 p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-xl font-semibold text-richblack-5 flex items-center gap-2">
+                <span className="bg-yellow-50 text-black px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider">Free Preview</span>
+                {previewVideo.title}
+              </p>
+              <button onClick={() => setPreviewVideo(null)} className="text-richblack-400 hover:text-richblack-5 transition-colors">
+                <RxCross2 className="text-2xl" />
+              </button>
+            </div>
+            <div className="w-full aspect-video bg-black rounded-lg overflow-hidden shadow-inner">
+              <video 
+                src={previewVideo.videoUrl} 
+                controls 
+                autoPlay 
+                controlsList="nodownload"
+                className="w-full h-full object-contain"
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        </div>
+      )}
       {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
     </div>
   )

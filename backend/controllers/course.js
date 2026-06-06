@@ -162,7 +162,6 @@ exports.getCourseDetails = async (req, res) => {
                 path: "courseContent",
                 populate: {
                     path: "subSection",
-                    select: "-videoUrl",
                 },
             })
             .exec()
@@ -175,6 +174,20 @@ exports.getCourseDetails = async (req, res) => {
                 message: `Could not find the course with ${courseId}`,
             });
         }
+
+        let courseDetailsObj = courseDetails.toObject();
+
+        // Strip videoUrl from all subSections EXCEPT the first one
+        let isFirstVideo = true;
+        courseDetailsObj.courseContent.forEach((content) => {
+            content.subSection.forEach((subSection) => {
+                if (isFirstVideo) {
+                    isFirstVideo = false; // Keep the first video URL
+                } else {
+                    delete subSection.videoUrl; // Delete the rest
+                }
+            })
+        })
 
         // if (courseDetails.status === "Draft") {
         //   return res.status(403).json({
@@ -198,7 +211,7 @@ exports.getCourseDetails = async (req, res) => {
         return res.status(200).json({
             success: true,
             data: {
-                courseDetails,
+                courseDetails: courseDetailsObj,
                 totalDuration,
             },
             message: 'Fetched course data successfully'
