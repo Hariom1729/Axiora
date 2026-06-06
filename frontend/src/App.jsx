@@ -98,12 +98,12 @@ function App() {
   const isWorkspace = location.pathname.startsWith('/contest-workspace');
 
   return (
-    <div className="w-screen min-h-screen bg-richblack-900 flex flex-col font-inter">
+    <div className="w-full overflow-x-hidden min-h-screen bg-richblack-900 flex flex-col font-inter">
       {!isWorkspace && <Navbar />}
 
       {/* go upward arrow */}
       <button onClick={() => window.scrollTo(0, 0)}
-        className={`bg-yellow-25 hover:bg-yellow-50 hover:scale-110 p-3 text-lg text-black rounded-2xl fixed right-3 z-10 duration-500 ease-in-out ${showArrow ? 'bottom-6' : '-bottom-24'} `} >
+        className={`bg-yellow-25 hover:bg-yellow-50 hover:scale-110 p-3 text-lg text-black rounded-2xl fixed right-8 z-50 duration-500 ease-in-out ${showArrow ? 'bottom-6' : '-bottom-24'} `} >
         <HiArrowNarrowUp />
       </button>
 
