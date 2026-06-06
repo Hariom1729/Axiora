@@ -2,7 +2,9 @@ import { FcGoogle } from "react-icons/fc"
 import { useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
 
-import { loginWithGoogle } from "../../../services/operations/authAPI"
+import { GoogleLogin } from '@react-oauth/google'
+
+import { loginWithOAuthToken } from "../../../services/operations/authAPI"
 
 function LoginForm() {
   const navigate = useNavigate();
@@ -17,14 +19,22 @@ function LoginForm() {
       </div>
 
       {/* Google Sign-In Button */}
-      <button
-        type="button"
-        onClick={() => dispatch(loginWithGoogle(navigate))}
-        className="flex items-center justify-center gap-x-3 rounded-xl border border-richblack-700 bg-richblack-800/50 py-4 px-[12px] font-semibold text-richblack-5 hover:bg-richblack-700 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-[0_0_15px_rgba(255,255,255,0.05)]"
-      >
-        <FcGoogle className="text-2xl" />
-        <span>Continue with Google</span>
-      </button>
+      <div className="flex justify-center w-full">
+        <GoogleLogin
+          onSuccess={(credentialResponse) => {
+            dispatch(loginWithOAuthToken(credentialResponse.credential, navigate));
+          }}
+          onError={() => {
+            console.log('Login Failed');
+          }}
+          useOneTap
+          theme="filled_black"
+          shape="rectangular"
+          size="large"
+          text="continue_with"
+          width="100%"
+        />
+      </div>
     </div>
   )
 }

@@ -1,17 +1,18 @@
 // firebaseLogin, getCurrentUser, changePassword
 
-const admin = require('../config/firebase');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/user');
 const Profile = require('../models/profile');
 const OTP = require('../models/OTP');
 const otpGenerator = require('otp-generator');
 require('dotenv').config();
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// ================ FIREBASE LOGIN ================
-// Called after frontend Firebase auth (email/password, Google, etc.)
-// Verifies the Firebase ID token, finds or creates the MongoDB user
-exports.firebaseLogin = async (req, res) => {
+// ================ GOOGLE OAUTH LOGIN ================
+// Called after frontend Google auth
+// Verifies the Google ID token, finds or creates the MongoDB user
+exports.oauthLogin = async (req, res) => {
     try {
         // Extract Firebase ID token from Authorization header
         const authHeader = req.header('Authorization');
@@ -20,24 +21,30 @@ exports.firebaseLogin = async (req, res) => {
         if (!token) {
             return res.status(401).json({
                 success: false,
-                message: 'Firebase ID token is required',
+                message: 'Google ID token is required',
             });
         }
 
-        // Verify the Firebase ID token
-        let decodedToken;
+        // Verify the Google ID token
+        let userid, tokenEmail, name, picture;
         try {
-            decodedToken = await admin.auth().verifyIdToken(token);
+            const ticket = await client.verifyIdToken({
+                idToken: token,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+            const payload = ticket.getPayload();
+            userid = payload['sub'];
+            tokenEmail = payload['email'];
+            name = payload['name'];
+            picture = payload['picture'];
         } catch (error) {
-            console.log('Error verifying Firebase token:', error.message);
+            console.log('Error verifying Google token:', error.message);
             return res.status(401).json({
                 success: false,
-                message: 'Invalid or expired Firebase token',
+                message: 'Invalid or expired Google token',
                 error: error.message,
             });
         }
-
-        const { uid, email: tokenEmail, name, picture } = decodedToken;
         const { firstName: bodyFirstName, lastName: bodyLastName, accountType: bodyAccountType, contactNumber, email: bodyEmail } = req.body;
         const email = tokenEmail || bodyEmail;
 
@@ -48,16 +55,16 @@ exports.firebaseLogin = async (req, res) => {
             });
         }
 
-        // Try to find existing user by firebaseUid OR email
+        // Try to find existing user by oauthId OR email
         let user = await User.findOne({
-            $or: [{ firebaseUid: uid }, { email: email }],
+            $or: [{ oauthId: userid }, { email: email }],
         }).populate('additionalDetails');
 
         if (user) {
             // ---- Existing user ----
-            // Link firebaseUid if the user was found by email but doesn't have one yet
-            if (!user.firebaseUid) {
-                user.firebaseUid = uid;
+            // Link oauthId if the user was found by email but doesn't have one yet
+            if (!user.oauthId) {
+                user.oauthId = userid;
             }
 
             // Update lastLogin timestamp (using updatedAt via save)
@@ -90,12 +97,12 @@ exports.firebaseLogin = async (req, res) => {
             const lastName = bodyLastName || nameParts.slice(1).join(' ') || 'User';
             const accountType = bodyAccountType || 'Student';
 
-            // Use Firebase profile picture or Dicebear avatar
+            // Use Google profile picture or Dicebear avatar
             const image =
                 picture || `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`;
 
             user = await User.create({
-                firebaseUid: uid,
+                oauthId: userid,
                 firstName,
                 lastName,
                 email,
@@ -122,7 +129,7 @@ exports.firebaseLogin = async (req, res) => {
             message: 'User logged in successfully',
         });
     } catch (error) {
-        console.log('Error in firebaseLogin:', error);
+        console.log('Error in oauthLogin:', error);
         return res.status(500).json({
             success: false,
             message: 'Error during authentication',
@@ -169,43 +176,13 @@ exports.getCurrentUser = async (req, res) => {
 
 
 // ================ CHANGE PASSWORD ================
-// Since Firebase manages passwords, we delegate to Firebase Admin SDK
+// Google OAuth manages passwords
 exports.changePassword = async (req, res) => {
     try {
-        const { newPassword } = req.body;
-
-        if (!newPassword) {
-            return res.status(400).json({
-                success: false,
-                message: 'New password is required',
-            });
-        }
-
-        if (newPassword.length < 6) {
-            return res.status(400).json({
-                success: false,
-                message: 'Password must be at least 6 characters long',
-            });
-        }
-
-        // Update password in Firebase using Admin SDK
-        const firebaseUid = req.user.firebaseUid;
-
-        if (!firebaseUid) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    'Cannot change password. This account may use a social login provider (Google). Please manage your password through your provider.',
-            });
-        }
-
-        await admin.auth().updateUser(firebaseUid, {
-            password: newPassword,
-        });
-
-        return res.status(200).json({
-            success: true,
-            message: 'Password updated successfully via Firebase',
+        return res.status(400).json({
+            success: false,
+            message:
+                'Cannot change password. This account uses Google OAuth. Please manage your password through Google.',
         });
     } catch (error) {
         console.log('Error in changePassword:', error);

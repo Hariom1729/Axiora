@@ -1,11 +1,5 @@
 import { toast } from "react-hot-toast"
-import {
-  updatePassword as firebaseUpdatePassword,
-  reauthenticateWithCredential,
-  EmailAuthProvider,
-} from "firebase/auth"
 
-import { auth } from "../../firebase"
 import { setUser } from "../../slices/profileSlice"
 import { apiConnector } from "../apiConnector"
 import { settingsEndpoints } from "../apis"
@@ -91,44 +85,9 @@ export function updateProfile(token, formData) {
 export async function changePassword(token, formData) {
   const toastId = toast.loading("Loading...")
   try {
-    const currentUser = auth.currentUser
-
-    if (!currentUser) {
-      throw new Error("No authenticated user found. Please log in again.")
-    }
-
-    // Check if the user signed in with email/password (has password provider)
-    const hasPasswordProvider = currentUser.providerData.some(
-      (provider) => provider.providerId === "password"
-    )
-
-    if (!hasPasswordProvider) {
-      toast.error("Password change is not available for Google sign-in accounts.")
-      toast.dismiss(toastId)
-      return
-    }
-
-    // Re-authenticate the user before changing password
-    const credential = EmailAuthProvider.credential(
-      currentUser.email,
-      formData.oldPassword
-    )
-    await reauthenticateWithCredential(currentUser, credential)
-
-    // Update password in Firebase
-    await firebaseUpdatePassword(currentUser, formData.newPassword)
-
-    toast.success("Password Changed Successfully")
+    toast.error("Password change is not available for Google OAuth accounts. Please manage your password through Google.")
   } catch (error) {
     console.log("CHANGE_PASSWORD ERROR............", error)
-    const msg = error?.code === "auth/wrong-password"
-      ? "Current password is incorrect."
-      : error?.code === "auth/requires-recent-login"
-      ? "Please log out and log back in, then try again."
-      : error?.code === "auth/weak-password"
-      ? "New password should be at least 6 characters."
-      : error?.message || "Could not change password"
-    toast.error(msg)
   }
   toast.dismiss(toastId)
 }

@@ -3,7 +3,7 @@ const router = express.Router();
 
 // Controllers
 const {
-    firebaseLogin,
+    oauthLogin,
     getCurrentUser,
     changePassword
 } = require('../controllers/auth');
@@ -16,12 +16,10 @@ const { auth } = require('../middleware/auth');
 //                                      Authentication routes
 // ********************************************************************************************************
 
-// Route for Firebase login (find or create user after frontend Firebase auth)
-
-// Route for Firebase login (find or create user after frontend Firebase auth)
-// Note: firebaseLogin handles its own token verification internally,
+// Route for OAuth login (find or create user after frontend Google auth)
+// Note: oauthLogin handles its own token verification internally,
 // so we don't use the auth middleware here (user may not exist in MongoDB yet)
-router.post('/firebase-login', firebaseLogin);
+router.post('/oauth-login', oauthLogin);
 
 // Route for getting current authenticated user
 router.get('/me', auth, getCurrentUser);

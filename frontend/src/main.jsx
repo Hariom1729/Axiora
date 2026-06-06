@@ -11,6 +11,8 @@ import { Toaster } from 'react-hot-toast'
 
     
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 const store = configureStore({
   reducer: rootReducer
 });
@@ -19,8 +21,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     <Provider store={store}>
       <React.StrictMode>
-        <App />
-        <Toaster />
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <App />
+          <Toaster />
+        </GoogleOAuthProvider>
       </React.StrictMode>
     </Provider>
   </BrowserRouter>

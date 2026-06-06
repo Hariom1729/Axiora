@@ -1,12 +1,13 @@
 // AUTH , IS STUDENT , IS INSTRUCTOR , IS ADMIN
 
-const admin = require('../config/firebase');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/user');
 require('dotenv').config();
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // ================ AUTH ================
-// Verify Firebase ID token and attach MongoDB user to req.user
+// Verify Google ID token and attach MongoDB user to req.user
 exports.auth = async (req, res, next) => {
     try {
         // Extract token from Authorization header
@@ -21,12 +22,17 @@ exports.auth = async (req, res, next) => {
             });
         }
 
-        // Verify Firebase ID token
-        let decodedToken;
+        // Verify Google ID token
+        let userid;
         try {
-            decodedToken = await admin.auth().verifyIdToken(token);
+            const ticket = await client.verifyIdToken({
+                idToken: token,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+            const payload = ticket.getPayload();
+            userid = payload['sub'];
         } catch (error) {
-            console.log('Error while verifying Firebase token:', error.message);
+            console.log('Error while verifying Google token:', error.message);
             return res.status(401).json({
                 success: false,
                 message: 'Invalid or expired token',
@@ -34,8 +40,8 @@ exports.auth = async (req, res, next) => {
             });
         }
 
-        // Find MongoDB user by Firebase UID
-        const user = await User.findOne({ firebaseUid: decodedToken.uid }).populate('additionalDetails');
+        // Find MongoDB user by Google UID
+        const user = await User.findOne({ oauthId: userid }).populate('additionalDetails');
 
         if (!user) {
             return res.status(404).json({
