@@ -61,10 +61,16 @@ exports.getContestDetails = async (req, res) => {
         const token = authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : null;
         if (token) {
             try {
-                const admin = require('../config/firebase');
-                const decodedToken = await admin.auth().verifyIdToken(token);
+                const { OAuth2Client } = require('google-auth-library');
+                const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+                const ticket = await client.verifyIdToken({
+                    idToken: token,
+                    audience: process.env.GOOGLE_CLIENT_ID,
+                });
+                const payload = ticket.getPayload();
+                const userid = payload['sub'];
                 const User = require('../models/user');
-                const user = await User.findOne({ firebaseUid: decodedToken.uid });
+                const user = await User.findOne({ oauthId: userid });
                 if (user) userId = user._id;
             } catch (err) {
                 // Ignore token errors, treat as guest

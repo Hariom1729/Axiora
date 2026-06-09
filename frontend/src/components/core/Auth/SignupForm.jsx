@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { FcGoogle } from "react-icons/fc"
 import { useDispatch } from "react-redux"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { GoogleLogin } from '@react-oauth/google'
 
 import { loginWithOAuthToken } from "../../../services/operations/authAPI"
@@ -13,6 +13,7 @@ import Tab from "../../common/Tab"
 function SignupForm() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
 
   // student or instructor
   const [accountType, setAccountType] = useState(ACCOUNT_TYPE.STUDENT);
@@ -45,7 +46,7 @@ function SignupForm() {
       </div>
 
       {/* Google Sign-Up Button */}
-      <div className="flex justify-center w-full">
+      <div className="flex justify-center w-full" key={location.pathname}>
         <GoogleLogin
           onSuccess={(credentialResponse) => {
             dispatch(loginWithOAuthToken(credentialResponse.credential, navigate, accountType));

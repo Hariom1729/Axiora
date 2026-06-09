@@ -1,6 +1,6 @@
 import { FcGoogle } from "react-icons/fc"
 import { useDispatch } from "react-redux"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 
 import { GoogleLogin } from '@react-oauth/google'
 
@@ -9,6 +9,7 @@ import { loginWithOAuthToken } from "../../../services/operations/authAPI"
 function LoginForm() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
 
   return (
     <div className="mt-6 flex w-full flex-col gap-y-6">
@@ -19,7 +20,7 @@ function LoginForm() {
       </div>
 
       {/* Google Sign-In Button */}
-      <div className="flex justify-center w-full">
+      <div className="flex justify-center w-full" key={location.pathname}>
         <GoogleLogin
           onSuccess={(credentialResponse) => {
             dispatch(loginWithOAuthToken(credentialResponse.credential, navigate));
